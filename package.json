@@ -1,0 +1,29 @@
+{
+  "name": "todo",
+  "version": "1.0.0",
+  "description": "todo list app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CiaranO-C/todo.git"
+  },
+  "keywords": [
+    "todo"
+  ],
+  "author": "Ciaran OC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CiaranO-C/todo/issues"
+  },
+  "homepage": "https://github.com/CiaranO-C/todo#readme",
+  "dependencies": {
+    "webpack": "^5.90.3"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.6.0"
+  }
+}
