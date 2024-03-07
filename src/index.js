@@ -35,7 +35,7 @@ function saveToStorage() {
 };
 
 function addTaskToArray(task) {
-    allTasks.push(task)
+    allTasks.push(task);
 };
 
 
@@ -45,7 +45,7 @@ function Task(title, category, todos = []) {
     this.title = title;
     this.category = category;
     this.todos = todos;
-    this.style = 'default';
+    this.style = 'default'; //get rid of this
     this.sorted = false;
     this.sortedTodos = null;
     // const domElem = document.Element('');
@@ -118,7 +118,6 @@ Todo.prototype = {
     setPriority: function (newPriority) {
         this.priority = newPriority;
     },
-
     toggleComplete: function () {
         (this.complete) ? this.complete = false : this.complete = true;
     },
@@ -128,7 +127,6 @@ Todo.prototype = {
     },
     getTitle: () => this.title,
     getDescription: () => this.description,
-
     getPriority: () => this.priority
 };
 
@@ -136,29 +134,43 @@ Todo.prototype = {
 
 function attachToTask(task, todo) {
     task.setTodo(todo);
+    todo.parentTask = task.getTitle();
+}
+
+function createTask(title, category) {
+    const task = new Task();
+    task.setTitle(title);
+    task.setCategory(category);
+
+    return task;
+}
+
+function createTodo(title, description, dueDate, priority) {
+    const todo = new Todo();
+    todo.setTitle(title);
+    todo.setDescription(description);
+    todo.setDate(dueDate);
+    todo.setPriority(priority);
+
+    return todo;
 }
 
 
 function generateExample() {
     //This will be triggered by using GUI
-    const taskOne = new Task('Train Paw', "Dog Training");
-    const todoOne = new Todo('Step One', 'Mark and treat when dog moves paws', 'today', '1');
-    const todoTwo = new Todo('Step two', 'Hold hand by paw, whenever dog brushes hand mark and treat', 'tomorrow', '2');
+    addTaskToArray(createTask('Train Paw', 'Dog Training'));
+    attachToTask(allTasks[0], createTodo('Step One', 'Mark and treat when dog moves paws', 'today', '1'));
+    attachToTask(allTasks[0], createTodo('Step two', 'Hold hand by paw, whenever dog brushes hand mark and treat', 'tomorrow', '2'));
 
-    //This will be handled by attachToTask function
-    taskOne.setTodo(todoOne);
-    taskOne.setTodo(todoTwo);
 
+    //this is a simplified breakdown of what the above achieves using the utility functions
     const taskTwo = new Task('Train Sit', "Work");
     const todoThree = new Todo('Step One', 'Mark and treat when dog moves paws', 'today', '2');
     const todoFour = new Todo('Step two', 'treat when dog sits', 'tomorrow', '1');
-
-    //This will be handled by attachToTask function
-    taskTwo.setTodo(todoThree);
-    taskTwo.setTodo(todoFour);
-
-    addTaskToArray(taskOne);
+    attachToTask(taskTwo, todoThree);
+    attachToTask(taskTwo, todoFour);
     addTaskToArray(taskTwo);
+
     saveToStorage();
 }
 
@@ -170,6 +182,17 @@ function filterAllTasks(category) {
     return filteredTasks;
 };
 
+
+//as todos are rendered 
+//to remove todo elem
+//assign return of this to 'parentTask variable'
+//then simply combine parentTask.getTodos() and index attribute and splice(index, 1); 
+//once removed ensure to re render display and re-assign attributes to new index values
+function getParentTask(parentTitle) {
+   const parentTask = allTasks.find((task) => task.getTitle() === parentTitle);
+
+   return parentTask;
+}
 
 
 function collateTodos(tasks) {
@@ -209,8 +232,8 @@ function thisWeeksTodos() {
 }
 
 
-checkStorage();
-//generateExample();
+//checkStorage();
+generateExample();
 console.log(allTasks);
 console.log(collateTodos(allTasks));
 console.log(filterTodos("complete", true));
@@ -218,6 +241,16 @@ console.log(filterTodos("complete", false));
 
 console.log(filterTodos("priority", "1"));
 console.log(filterTodos("priority", "2"));
-//some sort of page control object which stores things like
+//some sort of object which stores things like
 //currently selected task
-//is filtered true/false
+//is filtered true/false, maybe its a allTasks obj
+/*
+allTasks = {
+    tasks: [],
+    isFiltered: false,
+    isSorted: false,
+    etc...
+}
+*/
+
+/////////////////////////DOM STUFF//////////////////////////////////////

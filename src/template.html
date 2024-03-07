@@ -1,16 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>This is the template!</title>
     <script src="./index.js" defer></script>
     <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
-    <nav></nav>
+    <nav>
+        <header><input type="search" name="search" id="search" placeholder="Search"></header>
+        <div class="todo-dashboard">
+            <div class="today">
+                <div class="dash-item-header">
+                    <span class="material-symbols-outlined">
+                        calendar_today
+                    </span>
+                    <span id="dailyCount">6</span>
+                </div>
+                <h3>Today</h3>
+            </div>
+            <div class="next-week">
+                <div class="dash-item-header">
+                    <span class="material-symbols-outlined">
+                        date_range
+                    </span>
+                    <span id="weeklyCount">23</span>
+                </div>
+                <h3>This Week</h3>
+            </div>
+            <div class="all">
+                <div class="dash-item-header">
+                    <span class="material-symbols-outlined">
+                        background_dot_small
+                    </span>
+                    <span id="taskCount">84</span>
+                </div>
+                <h3>All Tasks</h3>
+            </div>
+            <div class="important">
+                <div class="dash-item-header">
+                    <span class="material-symbols-outlined">
+                        label_important
+                    </span>
+                    <span id="importantCount">19</span>
+                </div>
+                <h3>Important</h3>
+            </div>
+        </div>
+        <div class="task-dashboard">
+            <div class="task-list-header">
+                <h2>My Tasks</h2>
+                <button class="add">+</button>
+            </div>
+            <div class="task-list">
+                <div class="list-item">
+                    <span class="material-symbols-outlined">
+                        layers
+                    </span><span>Task Name</span>
+                </div>
+                <div class="list-item">
+                    <span class="material-symbols-outlined">
+                        layers
+                    </span><span>Task Name</span>
+                </div>
+                <div class="list-item">
+                    <span class="material-symbols-outlined">
+                        layers
+                    </span><span>Task Name</span>
+                </div>
+            </div>
+        </div>
+
+    </nav>
     <main>
-        <input type="datetime-local" name="due-date" id="due-date">
+        <div id="menu-button" class="hidden">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <header>
+            <div class="logo-container">
+                <img src="./logo-3.png" alt="logo" id="logo">
+                <h1>TaskHop</h1>
+            </div>
+            <button id="delete-all">Delete All</button>
+        </header>
+        <div class="content">
+            <h1>Your Tasks</h1>
+            <div class="tasks-container">
+                <div class="task"></div>
+                <div class="task"></div>
+                <div class="task"></div>
+                <div class="task"></div>
+                <div class="task"></div>
+                <div class="task"></div>
+            </div>
+           <!-- this is the content for individual task pages <header>
+                <h1>Pet</h1>
+                <div class="title-container">
+                    <h2>Dog walking</h2>
+                    <div>
+                        <span class="todoCount">12</span>
+                        <button class="add">+</button>
+                    </div>
+                </div>
+            </header>
+            <div class="todo-list">
+                <div class="todo">
+                    <div class="checkbox">
+                        <div class="checkbox-icon"></div>
+                    </div>
+                    <div class="title-input-container">
+                        <input type="text" name="title" class="todo-title-input" value="Buy poop bags">
+                    </div>
+                    <div>
+                        <button class="edit"><span class="material-symbols-outlined">
+                                edit
+                            </span></button>
+                        <button class="delete"><span class="material-symbols-outlined">
+                                delete
+                            </span></button>
+                    </div>
+                </div>
+                <div class="todo complete">
+                    <div class="checkbox">
+                        <div class="checkbox-icon"></div>
+                    </div>
+                    <div class="title-input-container">
+                        <input type="text" name="title" class="todo-title-input" value="Give dog a bath">
+                        <div class="strikethrough"></div>
+                    </div>
+                    <div>
+                        <button class="edit"><span class="material-symbols-outlined">
+                                edit
+                            </span></button>
+                        <button class="delete"><span class="material-symbols-outlined">
+                                delete
+                            </span></button>
+                    </div>
+                </div>
+                <div class="todo complete">
+                    <div class="checkbox">
+                        <div class="checkbox-icon"></div>
+                    </div>
+                    <div class="title-input-container">
+                        <input type="text" name="title" class="todo-title-input" value="Buy treats">
+                        <div class="strikethrough"></div>
+                    </div>
+                    <div>
+                        <button class="edit"><span class="material-symbols-outlined">
+                                edit
+                            </span></button>
+                        <button class="delete"><span class="material-symbols-outlined">
+                                delete
+                            </span></button>
+                    </div>
+                </div>
+            </div>
+            -->
+
+        </div>
     </main>
 </body>
+
 </html>
