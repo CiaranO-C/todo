@@ -262,18 +262,98 @@ header h1 {
     grid-auto-rows: auto;
     justify-items: center;
     row-gap: 45px;
+
 }
 
-.task {
+.tasks-container>div {
     display: flex;
+    flex-direction: column;
     height: 176px;
     width: 250px;
     background-color: #e2e2e2;
     border-radius: 20px;
     border: 2px solid white;
+    transition: 0.4s;
+    color: rgb(55, 55, 55);
+    justify-content: space-between;
+    box-sizing: border-box;
 }
 
-.content header {
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgb(255, 255, 255);
+    padding-left: 10px;
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
+.task-header>span {
+    font-size: 40px;
+    color: rgb(55, 55, 55);
+}
+
+.task-header>h2 {
+    font-size: 30px;
+    font-weight: 100;
+    margin-right: 17px;
+}
+
+.tasks-container>div>section {
+    display: flex;
+    padding-left: 10px;
+    padding-right: 8px;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.todos-amount {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid white;
+    border-radius: 15px;
+    height: 80px;
+    width: 70px;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.line{
+    width: 100%;
+    height: 2px;
+    background-color: white;
+}
+
+.task-button-container {
+    align-self: end;
+    margin-bottom: -6px;
+    margin-right: 10px;
+}
+
+.task-button-container button {
+   border: none;
+   background-color: rgba(255, 255, 255, 0);
+}
+
+.task:hover {
+    background-color: #f0f0f0;
+}
+
+#addTask {
+    align-items: center;
+    justify-content: center;
+    color: #4c4c4c;
+    cursor: pointer;
+    
+}
+
+#addTask span {
+    font-size: 50px;
+    cursor: pointer;
+}
+
+.content>header {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 1fr;

@@ -254,3 +254,6 @@ allTasks = {
 */
 
 /////////////////////////DOM STUFF//////////////////////////////////////
+const allTasksPage = (function () {
+console.log(allTasks);
+})();
