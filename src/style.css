@@ -320,6 +320,8 @@ header h1 {
     width: 178px;
 }
 
+
+
 .edit:hover {
     cursor: pointer;
     color: white;
@@ -371,6 +373,14 @@ header h1 {
 
 .task-button-container button:hover {
     color: white;
+}
+
+.tasks-container .delete {
+    background-color: #f24a4a;
+}
+
+.tasks-container .delete:hover {
+    background-color: #f24a4a;
 }
 
 #addTask {

@@ -248,6 +248,8 @@ function allTasksPage() {
 
     const mainContent = document.querySelector('.content');
 
+   
+
     const pageTitle = document.createElement('h1');
     pageTitle.textContent = 'Your Tasks';
 
@@ -333,16 +335,47 @@ function allTasksPage() {
         const [icon, titleInput] = taskElement.children[0].children;
         const [editBtn, deleteBtn] = taskElement.children[1].children[1].children;
 
+        deleteBtn.addEventListener('click', () => {
+            const status = deleteBtn.textContent;
+
+            if(status === 'delete'){
+                icon.classList.toggle('edit', false);
+                titleInput.classList.toggle('edit', false);
+                titleInput.readOnly = true;
+                icon.removeEventListener('click', modalListeners);
+
+                taskElement.classList.toggle('delete');
+                editBtn.textContent = 'close';
+                deleteBtn.textContent = 'done';
+            } else {
+               const i = allTasks.indexOf(taskObject);
+               allTasks.splice(i, 1);
+               saveToStorage();
+               taskElement.remove();
+            }
+        })
+
+//delete buttons needs to 
+//turn background red
+//change buttons to x and tick
+//x cancels
+//tick confirms
+//remove element and all children
+//remove task from array at its index
+//remove any event listeners attached to task
+//re render page
+
+
         editBtn.addEventListener('click', () => {
             const status = editBtn.textContent;
-            console.log(status);
+            
             if (status === 'edit') {
                 icon.classList.toggle('edit');
                 titleInput.classList.toggle('edit');
                 titleInput.readOnly = false;
                 editBtn.textContent = 'done';
                 icon.addEventListener('click', modalListeners);
-            } else {
+            } else if(status === 'done') {
                 icon.classList.toggle('edit');
                 titleInput.classList.toggle('edit');
                 titleInput.readOnly = true;
@@ -350,10 +383,15 @@ function allTasksPage() {
                 icon.removeEventListener('click', modalListeners);
                 updateTaskObject();
                 saveToStorage();
-            };
+            } else if (status === 'close') {
+                taskElement.classList.toggle('delete', false);
+                editBtn.textContent = 'edit';
+                deleteBtn.textContent = 'delete';
+            }
         });
+        
 
-        function modalListeners(event) {
+        function modalListeners() {
             const modal = document.querySelector('#myModal');
             const closeBtn = document.querySelector('#closeModal');
             const confirmBtn = document.querySelector('#modalConfirm');
