@@ -159,7 +159,7 @@ function createTodo(title, description, dueDate, priority) {
 function generateExample() {
     //This will be triggered by using GUI
     addTaskToArray(createTask('Train Paw', 'pet_supplies'));
-    attachToTask(allTasks[0], createTodo('Step One', 'Mark and treat when dog moves paws', 'today', '1'));
+    attachToTask(allTasks[0], createTodo('Step One', 'Mark and treat when dog moves paws', new Date(new Date().toDateString()).toISOString(), '1'));
     attachToTask(allTasks[0], createTodo('Step two', 'Hold hand by paw, whenever dog brushes hand mark and treat', 'tomorrow', '2'));
 
 
@@ -204,9 +204,8 @@ function collateTodos(tasks) {
             allTodos.push(todos[j]);
         };
     };
-
     return allTodos;
-}
+};
 
 /*
     this.dueDate = dueDate;
@@ -226,7 +225,10 @@ function thisWeeksTodos() {
     const today = new Date(new Date().toDateString());
     const weekToday = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const filteredTodos = allTodos.filter((todo) => todo[dueDate] <= weekToday);
+    const filteredTodos = allTodos.filter((todo) => {
+        const dueDate = new Date(todo.dueDate);
+        return dueDate <= weekToday;
+    });
 
     return filteredTodos;
 }
@@ -244,11 +246,100 @@ allTasks = {
 */
 
 /////////////////////////DOM STUFF//////////////////////////////////////
-function allTasksPage() {
+function pageControl() {
+    const searchBar = document.querySelector('#search');
+    const deleteAllBtn = document.querySelector('#deleteAll');
+    const content = document.querySelector('.content');
 
+    const todayBtn = document.querySelector('.today');
+    const thisWeekBtn = document.querySelector('.this-week');
+    const allTasksBtn = document.querySelector('.all');
+    const importantBtn = document.querySelector('.important');
+
+    let displayArray = [];
+
+    function showSelected(btn) {
+        const previousBtn = document.querySelector('.selected');
+        if (previousBtn) { previousBtn.classList.toggle('selected', false) };
+
+        btn.classList.toggle('selected', true);
+    };
+
+    function clearSelection() {
+        const previousBtn = document.querySelector('.selected');
+        if (previousBtn) { previousBtn.classList.toggle('selected', false) };
+    };
+
+    function displayAllTasks() {
+        clearSelection();
+        showSelected(allTasksBtn);
+        displayArray = allTasks.slice();
+        allTasksPage(displayArray);
+    }
+
+    function displayToday() {
+        const today = new Date(new Date().toDateString()).toISOString();
+        clearSelection();
+        showSelected(todayBtn);
+        displayArray = filterTodos('dueDate', today);
+        console.log(displayArray);
+        //todaysTodosPage(displayArray);
+    }
+
+    function displayThisWeek() {
+        clearSelection();
+        showSelected(thisWeekBtn);
+        displayArray = thisWeeksTodos();
+        console.log(displayArray);
+        //displayArray needs to be allTasks filtered to dates less than a week from today
+        //thisWeeksTodos(displayArray);
+    }
+
+    function displayImportant() {
+        clearSelection();
+        showSelected(importantBtn);
+        displayArray = filterTodos('priority', '1');
+        console.log(displayArray);
+        //importantTodos(displayArray);
+    }
+
+    function searchByTask() {
+        searchBar.addEventListener('keydown',)
+    }
+
+    function searchByTodo() {
+
+    }
+
+    function clearContent() {
+        while (content.firstChild) {
+            content.removeChild(content.firstChild);
+        };
+        console.log('content cleared!');
+    };
+
+    window.addEventListener('DOMContentLoaded', displayAllTasks);
+
+    todayBtn.addEventListener('click', () => {
+        clearContent();
+        displayToday();
+    });
+    thisWeekBtn.addEventListener('click', () => {
+        clearContent();
+        displayThisWeek();
+    });
+    allTasksBtn.addEventListener('click', () => {
+        clearContent();
+        displayAllTasks();
+    });
+    importantBtn.addEventListener('click', () => {
+        clearContent();
+        displayImportant();
+    });
+}
+
+function allTasksPage(tasks) {
     const mainContent = document.querySelector('.content');
-
-   
 
     const pageTitle = document.createElement('h1');
     pageTitle.textContent = 'Your Tasks';
@@ -258,9 +349,9 @@ function allTasksPage() {
 
     mainContent.append(pageTitle, taskContainer);
 
-    if (allTasks.length) {
-        for (let i = 0; i < allTasks.length; i++) {
-            const task = allTasks[i];
+    if (tasks.length) {
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
 
             const taskDiv = document.createElement('div');
 
@@ -338,7 +429,7 @@ function allTasksPage() {
         deleteBtn.addEventListener('click', () => {
             const status = deleteBtn.textContent;
 
-            if(status === 'delete'){
+            if (status === 'delete') {
                 icon.classList.toggle('edit', false);
                 titleInput.classList.toggle('edit', false);
                 titleInput.readOnly = true;
@@ -348,34 +439,28 @@ function allTasksPage() {
                 editBtn.textContent = 'close';
                 deleteBtn.textContent = 'done';
             } else {
-               const i = allTasks.indexOf(taskObject);
-               allTasks.splice(i, 1);
-               saveToStorage();
-               taskElement.remove();
+                const i = tasks.indexOf(taskObject);
+                deleteTask(i);
+                saveToStorage();
+                taskElement.remove();
+                //need to remove deleteBtn listener after use
             }
         })
 
-//delete buttons needs to 
-//turn background red
-//change buttons to x and tick
-//x cancels
-//tick confirms
-//remove element and all children
-//remove task from array at its index
-//remove any event listeners attached to task
-//re render page
-
+        function deleteTask(i) {
+            allTasks.splice(i, 1);
+        }
 
         editBtn.addEventListener('click', () => {
             const status = editBtn.textContent;
-            
+
             if (status === 'edit') {
                 icon.classList.toggle('edit');
                 titleInput.classList.toggle('edit');
                 titleInput.readOnly = false;
                 editBtn.textContent = 'done';
                 icon.addEventListener('click', modalListeners);
-            } else if(status === 'done') {
+            } else if (status === 'done') {
                 icon.classList.toggle('edit');
                 titleInput.classList.toggle('edit');
                 titleInput.readOnly = true;
@@ -389,7 +474,7 @@ function allTasksPage() {
                 deleteBtn.textContent = 'delete';
             }
         });
-        
+
 
         function modalListeners() {
             const modal = document.querySelector('#myModal');
@@ -417,13 +502,13 @@ function allTasksPage() {
         function updateTaskObject() {
             console.log(taskObject);
             taskObject.setCategory(icon.textContent);
-    
+
             taskObject.setTitle(titleInput.value);
         };
     };
 };
 
-checkStorage();
-//generateExample();
+//checkStorage();
+generateExample();
 console.log(allTasks);
-allTasksPage();
+pageControl();

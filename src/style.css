@@ -129,11 +129,14 @@ input[type="search"]::-webkit-search-results-decoration {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
-    transition: 0.3s;
 }
 
 .todo-dashboard>div:hover {
     background-color: rgb(26, 26, 26);
+}
+
+.selected {
+    border: 1px solid white;
 }
 
 .task-dashboard {
@@ -229,7 +232,7 @@ header h1 {
     top: -5px;
 }
 
-#delete-all {
+#deleteAll {
     height: 38px;
     width: 103px;
     font-family: inherit;
@@ -241,7 +244,7 @@ header h1 {
     cursor: pointer;
 }
 
-#delete-all:hover {
+#deleteAll:hover {
     background-color: #ff3e48;
     border: 1.5px solid black;
 }
