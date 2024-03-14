@@ -226,6 +226,13 @@ const todoModule = (function () {
 })();
 
 
+
+
+
+
+
+
+
 ////////////////////////////////////////////////Task Utility Functions////////////////////////////////////////////////
 
 //attach 
@@ -298,45 +305,16 @@ function generateExample() {
 }
 
 
-function collateTodos(tasks) {
-    const allTodos = [];
 
-    for (let i = 0; i < tasks.length; i++) {
-        const todos = tasks[i].getTodos();
-        for (let j = 0; j < todos.length; j++) {
-            allTodos.push(todos[j]);
-        };
-    };
-    return allTodos;
-};
 
-/*
-    this.dueDate = dueDate;
-    this.priority = priority
-    this.complete = false;
-*/
 
-function filterTodos(tasks, key, value) {
-    const allTodos = collateTodos(tasks);
-    const filteredTodos = allTodos.filter((todo) => todo[key] === value);
 
-    return filteredTodos;
-}
 
-function thisWeeksTodos(tasks) {
-    const allTodos = collateTodos(tasks);
-    const today = new Date(new Date().toDateString());
-    const weekToday = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const filteredTodos = allTodos.filter((todo) => {
-        const dueDate = new Date(todo.dueDate);
-        return dueDate >= today && dueDate <= weekToday;
-    });
 
-    return filteredTodos;
-}
 
-///////////////////////////////////DOM STUFF//////////////////////////////////////
+
+////////////////////////////////////////////////////////////page control/////////////////////////////////////////////
 const pageControl = (function () {
     const searchBar = document.querySelector('#search');
     const deleteAllBtn = document.querySelector('#deleteAll');
@@ -349,6 +327,38 @@ const pageControl = (function () {
 
     let displayArray = [];
     const tasksObject = {};
+
+    function collateTodos(tasks) {
+        const allTodos = [];
+
+        for (let i = 0; i < tasks.length; i++) {
+            const todos = tasks[i].getTodos();
+            for (let j = 0; j < todos.length; j++) {
+                allTodos.push(todos[j]);
+            };
+        };
+        return allTodos;
+    };
+
+    function filterTodos(tasks, key, value) {
+        const allTodos = collateTodos(tasks);
+        const filteredTodos = allTodos.filter((todo) => todo[key] === value);
+
+        return filteredTodos;
+    }
+
+    function thisWeeksTodos(tasks) {
+        const allTodos = collateTodos(tasks);
+        const today = new Date(new Date().toDateString());
+        const weekToday = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        const filteredTodos = allTodos.filter((todo) => {
+            const dueDate = new Date(todo.dueDate);
+            return dueDate >= today && dueDate <= weekToday;
+        });
+
+        return filteredTodos;
+    }
 
     function updateTask(id, icon, title) {
         const task = tasksObject[id];
@@ -398,7 +408,7 @@ const pageControl = (function () {
         clearSelection();
         showSelected(allTasksBtn);
         displayArray = storage.getArrayOfTasks();
-        allTasksPage(displayArray);
+        allTasksModule.allTasksPage(displayArray);
     }
 
     function displayToday() {
@@ -448,22 +458,24 @@ const pageControl = (function () {
         clearContent();
         displayImportant();
     });
-    //
-    return { addToAllTasks, saveAllTasks, deleteTask, updateTask };
+
+    function clearContent() {
+        const content = document.querySelector('.content');
+        while (content.firstChild) {
+            content.removeChild(content.firstChild);
+        };
+        console.log('content cleared!');
+    };
+
+    return { clearContent, filterTodos, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
 })();
 
-function clearContent() {
-    const content = document.querySelector('.content');
-    while (content.firstChild) {
-        content.removeChild(content.firstChild);
-    };
-    console.log('content cleared!');
-};
 
 
 
-///////////////////////////////////////side Bar stuff////////////////////////////////
-const sidebar = (function() {
+
+///////////////////////////////////////side Bar module////////////////////////////////
+const sidebar = (function () {
     const dailyTodoCount = document.querySelector('#dailyCount');
     const weeklyTodoCount = document.querySelector('#weeklyCount');
     const importantTodoCount = document.querySelector('#importantCount');
@@ -487,9 +499,9 @@ const sidebar = (function() {
 
     function updateCounters() {
         const tasks = storage.getArrayOfTasks();
-        dailyTodoCount.textContent = filterTodos(tasks, 'dueDate', new Date(new Date().toDateString()).toISOString()).length;
-        weeklyTodoCount.textContent = thisWeeksTodos(tasks).length;
-        importantTodoCount.textContent = filterTodos(tasks, 'priority', '1').length;
+        dailyTodoCount.textContent = pageControl.filterTodos(tasks, 'dueDate', new Date(new Date().toDateString()).toISOString()).length;
+        weeklyTodoCount.textContent = pageControl.thisWeeksTodos(tasks).length;
+        importantTodoCount.textContent = pageControl.filterTodos(tasks, 'priority', '1').length;
         taskCount.textContent = tasks.length;
     }
 
@@ -511,8 +523,8 @@ const sidebar = (function() {
             listItem.addEventListener('click', taskListener);
 
             function taskListener() {
-                clearContent();
-                taskPage(task);
+                pageControl.clearContent();
+                singleTaskModule.singleTaskPage(task);
             };
         });
     }
@@ -525,201 +537,225 @@ const sidebar = (function() {
         };
     };
 
-   
-    return {updateCounters, populateTaskList}
+
+    return { updateCounters, populateTaskList }
 })();
 
-function taskPage(task) {
+
+
+
+////////////////////////////////////////SINGLE TASK PAGES//////////////////////////////////////////////////
+singleTaskModule = (function() {
+function singleTaskPage(task) {
     console.log(task);
 }
+return {singleTaskPage};
+})();
 
-function allTasksPage(tasks) {
-    const mainContent = document.querySelector('.content');
 
-    const pageTitle = document.createElement('h1');
-    pageTitle.textContent = 'Your Tasks';
 
-    const taskContainer = document.createElement('div');
-    taskContainer.classList.add('tasks-container');
 
-    mainContent.append(pageTitle, taskContainer);
 
-    if (tasks.length) {
-        for (let i = 0; i < tasks.length; i++) {
-            const task = tasks[i];
-            console.log(task);
 
-            const taskDiv = document.createElement('div');
 
-            const header = document.createElement('header');
-            header.classList.add('task-header');
 
-            const categoryIcon = document.createElement('span');
-            categoryIcon.classList.add('material-symbols-outlined');
-            categoryIcon.textContent = task.getCategory();
+////////////////////////////////////////////////////ALL Task Pages//////////////////////////////////////////////////
+const allTasksModule = (function () {
+    function allTasksPage(tasks) {
+        const mainContent = document.querySelector('.content');
 
-            const taskTitle = document.createElement("input");
-            taskTitle.type = "text";
-            taskTitle.readOnly = true;
-            taskTitle.value = task.getTitle();
+        const pageTitle = document.createElement('h1');
+        pageTitle.textContent = 'Your Tasks';
 
-            header.append(categoryIcon, taskTitle);
+        const taskContainer = document.createElement('div');
+        taskContainer.classList.add('tasks-container');
 
-            const section = document.createElement('section');
+        mainContent.append(pageTitle, taskContainer);
 
-            const todoCounter = document.createElement('div');
-            todoCounter.classList.add('todos-amount');
+        if (tasks.length) {
+            for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
+                console.log(task);
 
-            const todosText = document.createElement('span');
-            todosText.textContent = 'Todos';
+                const taskDiv = document.createElement('div');
 
-            const line = document.createElement('div');
-            line.classList.add('line');
+                const header = document.createElement('header');
+                header.classList.add('task-header');
 
-            const todoNumber = document.createElement('span');
-            todoNumber.textContent = task.getTodos().length;
+                const categoryIcon = document.createElement('span');
+                categoryIcon.classList.add('material-symbols-outlined');
+                categoryIcon.textContent = task.getCategory();
 
-            todoCounter.append(todosText, line, todoNumber);
+                const taskTitle = document.createElement("input");
+                taskTitle.type = "text";
+                taskTitle.readOnly = true;
+                taskTitle.value = task.getTitle();
 
-            const buttonContainer = document.createElement('div');
-            buttonContainer.classList.add('task-button-container');
+                header.append(categoryIcon, taskTitle);
 
-            const editButton = document.createElement('button');
-            const deleteButton = document.createElement('button');
+                const section = document.createElement('section');
 
-            editButton.classList.add('material-symbols-outlined');
-            deleteButton.classList.add('material-symbols-outlined');
+                const todoCounter = document.createElement('div');
+                todoCounter.classList.add('todos-amount');
 
-            editButton.textContent = 'edit';
-            deleteButton.textContent = 'delete';
+                const todosText = document.createElement('span');
+                todosText.textContent = 'Todos';
 
-            const clickables = [categoryIcon, taskTitle, editButton, deleteButton, taskDiv];
-            clickables.forEach(element => element.setAttribute('data-taskid', `${task.getId()}`));
+                const line = document.createElement('div');
+                line.classList.add('line');
 
-            buttonContainer.append(editButton, deleteButton);
+                const todoNumber = document.createElement('span');
+                todoNumber.textContent = task.getTodos().length;
 
-            section.append(todoCounter, buttonContainer);
-            taskDiv.append(header, section);
+                todoCounter.append(todosText, line, todoNumber);
 
-            taskListeners(clickables);
-            taskContainer.appendChild(taskDiv);
+                const buttonContainer = document.createElement('div');
+                buttonContainer.classList.add('task-button-container');
+
+                const editButton = document.createElement('button');
+                const deleteButton = document.createElement('button');
+
+                editButton.classList.add('material-symbols-outlined');
+                deleteButton.classList.add('material-symbols-outlined');
+
+                editButton.textContent = 'edit';
+                deleteButton.textContent = 'delete';
+
+                const clickables = [categoryIcon, taskTitle, editButton, deleteButton, taskDiv];
+                clickables.forEach(element => element.setAttribute('data-taskid', `${task.getId()}`));
+
+                buttonContainer.append(editButton, deleteButton);
+
+                section.append(todoCounter, buttonContainer);
+                taskDiv.append(header, section);
+
+                taskListeners(clickables);
+                taskContainer.appendChild(taskDiv);
+            };
+        } else {
+            const addTask = document.createElement('div');
+            addTask.id = 'addTask';
+
+            const addIcon = document.createElement('span');
+            addIcon.classList.add('material-symbols-outlined');
+            addIcon.textContent = 'add_circle';
+
+            addTask.appendChild(addIcon);
+
+            taskContainer.appendChild(addTask);
         };
-    } else {
-        const addTask = document.createElement('div');
-        addTask.id = 'addTask';
 
-        const addIcon = document.createElement('span');
-        addIcon.classList.add('material-symbols-outlined');
-        addIcon.textContent = 'add_circle';
+        function taskListeners([icon, titleInput, editBtn, deleteBtn, taskCard]) {
+            const taskId = taskCard.getAttribute('data-taskid');
 
-        addTask.appendChild(addIcon);
+            editBtn.addEventListener('click', handleEditBtn);
 
-        taskContainer.appendChild(addTask);
+            function handleEditBtn(event) {
+                const status = event.target.textContent;
+
+                if (status === 'edit') {
+                    cardEditable(true);
+
+                } else if (status === 'done') {
+                    cardEditable(false);
+                    updateTaskObj(taskId);
+                    pageControl.saveAllTasks();
+
+                } else if (status === 'close') {
+                    cardDeleteable(false);
+                };
+            }
+
+            function cardEditable(bool) {
+                const header = [icon, titleInput];
+                header.forEach(elem => elem.classList.toggle('edit', bool));
+                titleInput.readOnly = !(bool);
+
+                if (bool) {
+                    editBtn.textContent = 'done';
+                    icon.addEventListener('click', modalListeners);
+                } else {
+                    editBtn.textContent = 'edit';
+                    icon.removeEventListener('click', modalListeners);
+                };
+            }
+
+            function updateTaskObj(id) {
+                const category = icon.textContent;
+                const title = titleInput.value;
+
+                pageControl.updateTask(id, category, title);
+            }
+
+            function modalListeners() {
+                const modal = document.querySelector('#myModal');
+                const closeBtn = document.querySelector('#closeModal');
+                const confirmBtn = document.querySelector('#modalConfirm');
+
+                modal.classList.toggle('hidden'); //displays the modal
+
+                closeBtn.addEventListener('click', closeModal);
+                confirmBtn.addEventListener('click', changeIcon);
+
+                function closeModal() {
+                    modal.classList.toggle('hidden');
+                    closeBtn.removeEventListener('click', closeModal);
+                    confirmBtn.removeEventListener('click', changeIcon);
+                };
+
+                function changeIcon() {
+                    const selectedIcon = document.querySelector('input[name="category"]:checked').id;
+                    icon.textContent = selectedIcon;
+                    closeModal();
+                };
+            };
+
+            deleteBtn.addEventListener('click', handleDeleteBtn)
+
+            function handleDeleteBtn(event) {
+                const status = event.target.textContent;
+                console.log(status);
+
+                if (status === 'delete') {
+                    icon.removeEventListener('click', modalListeners);
+                    cardEditable(false);
+                    cardDeleteable(true);
+                } else {
+                    destroyTask(taskId);
+                    //update sidebar values
+                };
+            }
+
+            function cardDeleteable(bool) {
+                taskCard.classList.toggle('delete', bool);
+
+                if (bool) {
+                    editBtn.textContent = 'close';
+                    deleteBtn.textContent = 'done';
+                } else {
+                    editBtn.textContent = 'edit';
+                    deleteBtn.textContent = 'delete';
+                };
+            };
+
+            function destroyTask(id) {
+                editBtn.removeEventListener('click', () => handleEditBtn);
+                deleteBtn.removeEventListener('click', () => handleDeleteBtn)
+                pageControl.deleteTask(id); //deletes from object containing all tasks
+                pageControl.saveAllTasks(); // overwrites localstorage 'allTasks'
+                storage.deleteItem(id); // hard deletes individual task from localstorage
+                taskCard.remove(); // removes card from DOM
+            };
+        };
     };
+    return { allTasksPage };
+})();
 
-    function taskListeners([icon, titleInput, editBtn, deleteBtn, taskCard]) {
-        const taskId = taskCard.getAttribute('data-taskid');
 
-        editBtn.addEventListener('click', handleEditBtn);
 
-        function handleEditBtn(event) {
-            const status = event.target.textContent;
 
-            if (status === 'edit') {
-                cardEditable(true);
 
-            } else if (status === 'done') {
-                cardEditable(false);
-                updateTaskObj(taskId);
-                pageControl.saveAllTasks();
 
-            } else if (status === 'close') {
-                cardDeleteable(false);
-            };
-        }
-
-        function cardEditable(bool) {
-            const header = [icon, titleInput];
-            header.forEach(elem => elem.classList.toggle('edit', bool));
-            titleInput.readOnly = !(bool);
-
-            if (bool) {
-                editBtn.textContent = 'done';
-                icon.addEventListener('click', modalListeners);
-            } else {
-                editBtn.textContent = 'edit';
-                icon.removeEventListener('click', modalListeners);
-            };
-        }
-
-        function updateTaskObj(id) {
-            const category = icon.textContent;
-            const title = titleInput.value;
-
-            pageControl.updateTask(id, category, title);
-        }
-
-        function modalListeners() {
-            const modal = document.querySelector('#myModal');
-            const closeBtn = document.querySelector('#closeModal');
-            const confirmBtn = document.querySelector('#modalConfirm');
-
-            modal.classList.toggle('hidden'); //displays the modal
-
-            closeBtn.addEventListener('click', closeModal);
-            confirmBtn.addEventListener('click', changeIcon);
-
-            function closeModal() {
-                modal.classList.toggle('hidden');
-                closeBtn.removeEventListener('click', closeModal);
-                confirmBtn.removeEventListener('click', changeIcon);
-            };
-
-            function changeIcon() {
-                const selectedIcon = document.querySelector('input[name="category"]:checked').id;
-                icon.textContent = selectedIcon;
-                closeModal();
-            };
-        };
-
-        deleteBtn.addEventListener('click', handleDeleteBtn)
-
-        function handleDeleteBtn(event) {
-            const status = event.target.textContent;
-            console.log(status);
-
-            if (status === 'delete') {
-                icon.removeEventListener('click', modalListeners);
-                cardEditable(false);
-                cardDeleteable(true);
-            } else {
-                destroyTask(taskId);
-                //update sidebar values
-            };
-        }
-
-        function cardDeleteable(bool) {
-            taskCard.classList.toggle('delete', bool);
-
-            if (bool) {
-                editBtn.textContent = 'close';
-                deleteBtn.textContent = 'done';
-            } else {
-                editBtn.textContent = 'edit';
-                deleteBtn.textContent = 'delete';
-            };
-        };
-
-        function destroyTask(id) {
-            editBtn.removeEventListener('click', () => handleEditBtn);
-            deleteBtn.removeEventListener('click', () => handleDeleteBtn)
-            pageControl.deleteTask(id); //deletes from object containing all tasks
-            pageControl.saveAllTasks(); // overwrites localstorage 'allTasks'
-            storage.deleteItem(id); // hard deletes individual task from localstorage
-            taskCard.remove(); // removes card from DOM
-        };
-    };
-};
 
 storage.checkStorage();
 //generateExample();
