@@ -24,6 +24,7 @@ nav {
     width: 330px;
     overflow-y: scroll;
     gap: 30px;
+    z-index: 0;
 }
 
 nav>header {
@@ -294,7 +295,7 @@ header h1 {
 
 .tasks-container>div:hover {
     background-color: #eeeeee;
-   
+
 }
 
 .task-header {
@@ -458,6 +459,7 @@ header h1 {
     font-size: 16px;
     font-family: inherit;
     width: 100%;
+    cursor: default;
 }
 
 .todo input:focus {
@@ -481,10 +483,9 @@ header h1 {
     background-color: rgba(255, 255, 255, 0.201);
 }
 
-.todo div {
+.todo>div {
     display: flex;
     align-items: center;
-    gap: 5px;
 }
 
 .todo-title {
@@ -528,7 +529,7 @@ header h1 {
     background-color: rgb(255, 255, 255);
 }
 
-.strikethrough {
+.complete .strikethrough {
     position: absolute;
     width: 100%;
     height: 1.5px;
@@ -579,7 +580,7 @@ header h1 {
     backdrop-filter: blur(10px);
 }
 
-.modal-category {
+.modal>div {
     position: relative;
     width: 280px;
     height: auto;
@@ -637,7 +638,7 @@ header h1 {
 }
 
 .icons-container>div:hover,
-#modalConfirm:hover {
+.modal button:hover {
     background-color: rgba(255, 255, 255, 0.365);
     cursor: pointer;
 }
@@ -656,7 +657,7 @@ header h1 {
     font-weight: bold;
 }
 
-#modalConfirm {
+.modal button {
     border: 2px solid white;
     background-color: #ffffff00;
     height: 38px;
@@ -690,9 +691,6 @@ header h1 {
 }
 
 @media screen and (max-width: 980px) {
-    nav {
-        z-index: -1;
-    }
 
     main {
         margin-left: 0px;

@@ -21,60 +21,6 @@
 </head>
 
 <body>
-    <div id="myModal" class="modal hidden">
-
-        <div class="modal-category">
-            <span id="closeModal" class="material-symbols-outlined close">
-                cancel
-            </span>
-            <h3>Choose a new category</h3>
-            <div class="icons-container">
-                <div>
-                    <input type="radio" name="category" id="school">
-                    <label for="school" class="material-symbols-outlined">School</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="home">
-                    <label for="home" class="material-symbols-outlined">Home</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="work">
-                    <label for="work" class="material-symbols-outlined">Work</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="exercise">
-                    <label for="exercise" class="material-symbols-outlined">Exercise</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="savings">
-                    <label for="savings" class="material-symbols-outlined">Savings</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="pets">
-                    <label for="pets" class="material-symbols-outlined">Pets</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="sound_detection_dog_barking">
-                    <label for="sound_detection_dog_barking"
-                        class="material-symbols-outlined">sound_detection_dog_barking</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="grocery">
-                    <label for="grocery" class="material-symbols-outlined">Grocery</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="flight_takeoff">
-                    <label for="flight_takeoff" class="material-symbols-outlined">flight_takeoff</label>
-                </div>
-                <div>
-                    <input type="radio" name="category" id="family_restroom">
-                    <label for="family_restroom" class="material-symbols-outlined">family_restroom</label>
-                </div>
-            </div>
-            <button id="modalConfirm">Confirm</button>
-        </div>
-    </div>
-
     <nav>
         <header><input type="search" name="search" id="search" placeholder="Search"></header>
         <div class="todo-dashboard">
@@ -144,56 +90,32 @@
             </div>
             <button id="deleteAll">Delete All</button>
         </header>
-        <div class="content">
-            <!--<header>
-                <h1>Pet</h1>
-                <div class="title-container">
-                    <h2>Dog walking</h2>
-                    <div>
-                        <span class="todoCount">12</span>
-                        <button class="add">+</button>
-                    </div>
-                </div>
-            </header>
-            <div class="todo-list">
-                <div class="todo">
-                    <div class="checkbox">
-                        <div class="checkbox-icon"></div>
-                    </div>
-                    <div class="title-input-container">
-                        <input type="text" name="title" class="todo-title-input" value="Buy poop bags">
-                        <span>13/04/2024</span>
-                    </div>
-                    <div>
-                        <button class="edit"><span class="material-symbols-outlined">
-                                edit
-                            </span></button>
-                        <button class="delete"><span class="material-symbols-outlined">
-                                delete
-                            </span></button>
-                    </div>
-                </div>
-                <div class="todo complete">
-                    <div class="checkbox">
-                        <div class="checkbox-icon"></div>
-                    </div>
-                    <div class="title-input-container">
-                        <input type="text" name="title" class="todo-title-input" value="Give dog a bath">
-                        <span>20/04/2024</span>
-                        <div class="strikethrough"></div>
-                    </div>
-                    <div>
-                        <button class="edit"><span class="material-symbols-outlined">
-                                edit
-                            </span></button>
-                        <button class="delete"><span class="material-symbols-outlined">
-                                delete
-                            </span></button>
-                    </div>
-                </div>
-            </div>-->
-        </div>
+        <div class="content"></div>
     </main>
+
+    <!--MODAL STUFF-->
+    <div id="taskCategoryModal" class="modal hidden">
+        <div class="modal-category">
+            <span id="closeCategoryModal" class="material-symbols-outlined close">
+                cancel
+            </span>
+            <h3>Choose a new category</h3>
+            <button id="confirmCategory">Confirm</button>
+        </div>
+    </div>
+
+    <div id="taskAddModal" class="modal hidden">
+        <div class="modal-content">
+            <span id="closeTaskModal" class="material-symbols-outlined close">
+                cancel
+            </span>
+            <h3>Add new task</h3>
+            <h4>Title</h4>
+            <input type="text" name="taskTitle" id="taskTitle" placeholder="Dog Training">
+            <h4>Category</h4>
+            <button id="confirmTask">Confirm</button>
+        </div>
+    </div>
 </body>
 
 </html>

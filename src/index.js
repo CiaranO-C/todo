@@ -9,6 +9,7 @@ const storage = (function () {
                 const [id, task] = pair;
                 const restoredTask = attachMethods(task);
                 pageControl.addToAllTasks(id, restoredTask);
+                sidebar.addToTaskList(restoredTask);
             });
         };
     };
@@ -24,24 +25,30 @@ const storage = (function () {
     function getTask(id) {
         const jsonTask = getFromStorage(id);
         const parsedTask = parseStorageItem(jsonTask);
+        console.log(parsedTask);
+        console.log(getArrayOfTasks());
         const restoredTask = attachMethods(parsedTask);
+
+        console.log(restoredTask);
 
         return restoredTask;
     }
 
     function getArrayOfTasks() {
+        const allTasksArray = [];
+
         const jsonAllTasksObj = getFromStorage('allTasks');
-        const parsedTasks = Object.values(parseStorageItem(jsonAllTasksObj));
 
-        const allTasks = [];
+        if (jsonAllTasksObj) {
+            const parsedTasks = Object.values(parseStorageItem(jsonAllTasksObj));
 
-        parsedTasks.forEach(task => {
-            const restoredTask = attachMethods(task);
-            allTasks.push(restoredTask);
-        });
-
-        return allTasks
-    };
+            parsedTasks.forEach(task => {
+                const restoredTask = attachMethods(task);
+                allTasksArray.push(restoredTask);
+            });
+        };
+        return allTasksArray;
+    }
 
     //re-attach methods after parsing localStorage JSON
     function attachMethods(task) {
@@ -70,7 +77,7 @@ const storage = (function () {
         localStorage.removeItem(id);
     };
 
-    return { checkStorage, getArrayOfTasks, save, deleteItem }
+    return { checkStorage, getArrayOfTasks, getTask, save, deleteItem }
 })();
 
 
@@ -146,6 +153,10 @@ const tasksModule = (function () {
             this.sortedTodos = this.getTodos().slice();
             this.sortedTodos.sort((a, b) => a[key] - b[key]);
         },
+        saveTask: function () {
+            const id = this.id;
+            storage.save(id, this);
+        },
     };
 
     //checks storage for next unique ID, then stores the following one
@@ -202,16 +213,32 @@ const todoModule = (function () {
         setId: function () {
             this.id = generateTodoID();
         },
-        toggleComplete: function () {
-            this.complete = !(this.complete);
+        getId: function () {
+            return this.id;
+        },
+        getParentId: function () {
+            return this.parentTask;
+        },
+        toggleComplete: function (status) {
+            this.complete = status;
+        },
+        getComplete: function () {
+            return this.complete;
         },
         getDate: function () {
-            const stringDate = this.dueDate.toLocaleDateString();
+            const date = new Date(this.dueDate);
+            const stringDate = date.toLocaleDateString();
             return stringDate;
         },
-        getTitle: () => this.title,
-        getDescription: () => this.description,
-        getPriority: () => this.priority
+        getTitle: function () {
+            return this.title
+        },
+        getDescription: function () {
+            return this.description
+        },
+        getPriority: function () {
+            return this.priority
+        },
     };
 
     function generateTodoID() {
@@ -235,10 +262,11 @@ const todoModule = (function () {
 
 ////////////////////////////////////////////////Task Utility Functions////////////////////////////////////////////////
 
-//attach 
+//BOTH USED IN THE CREATION OF NEW TASKS/TODOS
 function attachToTask(task, todo) {
     task.setTodo(todo);
     todo.parentTask = task.getId();
+    task.saveTask();
 }
 
 function createTask(title, category) {
@@ -250,13 +278,11 @@ function createTask(title, category) {
 
     storage.save(id, task);
     pageControl.addToAllTasks(id, task);
+    pageControl.saveAllTasks();
     return task;
 }
 
-//adds task value to allTasks object with unique ID as key
-
-
-//give this an object where values are task objects
+//give this an object where values are task objects NOT CURRENTLY IN USE
 function filterAllTasks(tasks, category) {
     const all = tasks;
     const filteredTasks = all.filter((task) => task.getCategory() === category);
@@ -366,7 +392,22 @@ const pageControl = (function () {
         task.setTitle(title);
 
         storage.save(id, task); //updates individual task in local storage
+        saveAllTasks();
     };
+
+    function updateTodo(taskId, todoId, status, title) {
+        const task = tasksObject[taskId];
+        const todos = task.getTodos();
+        const todoToUpdate = todos.find(todo => todo.getId() === todoId);
+
+        todoToUpdate.toggleComplete(status);
+        todoToUpdate.setTitle(title);
+
+        console.log(todoToUpdate);
+
+        storage.save(taskId, task); //updates individual task in local storage
+        saveAllTasks();
+    }
 
     function addToAllTasks(id, task) {
         tasksObject[id] = task;
@@ -467,7 +508,7 @@ const pageControl = (function () {
         console.log('content cleared!');
     };
 
-    return { clearContent, filterTodos, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
+    return { clearContent, clearSelection, filterTodos, updateTodo, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
 })();
 
 
@@ -484,6 +525,7 @@ const sidebar = (function () {
 
     const menuBtn = document.querySelector('#menuButton');
     const main = document.querySelector('main');
+    const nav = document.querySelector('nav');
 
     menuBtn.addEventListener('click', () => {
         main.classList.toggle('expand-margin');
@@ -505,29 +547,55 @@ const sidebar = (function () {
         taskCount.textContent = tasks.length;
     }
 
-    function populateTaskList(tasks) {
-        tasks.forEach((task) => {
-            const listItem = document.createElement('div');
-            listItem.classList.add('list-item');
+    function addToTaskList(task) {
+        console.log(task);
+        const listItem = document.createElement('div');
+        listItem.classList.add('list-item');
 
-            const icon = document.createElement('span');
-            icon.classList.add('material-symbols-outlined');
-            icon.textContent = task.getCategory();
+        const icon = document.createElement('span');
+        icon.classList.add('material-symbols-outlined');
+        icon.textContent = task.getCategory();
 
-            const taskTitle = document.createElement('p');
-            taskTitle.textContent = task.getTitle();
+        const taskTitle = document.createElement('p');
+        taskTitle.textContent = task.getTitle();
 
-            listItem.append(icon, taskTitle);
-            taskList.appendChild(listItem);
+        listItem.append(icon, taskTitle);
+        taskList.appendChild(listItem);
 
-            listItem.addEventListener('click', taskListener);
+        listItem.setAttribute('data-taskid', `${task.getId()}`);
+        listItem.addEventListener('click', taskListener);
 
-            function taskListener() {
-                pageControl.clearContent();
-                singleTaskModule.singleTaskPage(task);
+        function taskListener() {
+            pageControl.clearSelection();
+            pageControl.clearContent();
+            singleTaskModule.singleTaskPage(task);
+        };
+    };
+
+    function removeFromTaskList(taskId) {
+        const tasks = taskList.children;
+
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            if (task.getAttribute('data-taskid') === taskId) {
+                task.remove();
             };
-        });
-    }
+        };
+    };
+
+    function updateListItem(taskId, icon, title) {
+        const tasks = taskList.children;
+        const newIcon = icon.textContent;
+        const newTitle = title.value;
+
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            if (task.getAttribute('data-taskid') === taskId) {
+                task.firstElementChild.textContent = newIcon;
+                task.lastElementChild.textContent = newTitle;
+            };
+        };
+    };
 
     function clearTaskList() {
         const tasks = taskList.children;
@@ -538,18 +606,196 @@ const sidebar = (function () {
     };
 
 
-    return { updateCounters, populateTaskList }
+    return { updateCounters, addToTaskList, removeFromTaskList, updateListItem }
 })();
 
 
 
 
 ////////////////////////////////////////SINGLE TASK PAGES//////////////////////////////////////////////////
-singleTaskModule = (function() {
-function singleTaskPage(task) {
-    console.log(task);
-}
-return {singleTaskPage};
+singleTaskModule = (function () {
+
+    function singleTaskPage(task) {
+        const taskIcon = task.getCategory();
+        const taskTitle = task.getTitle();
+        const todos = task.getTodos();
+
+        const mainContent = document.querySelector('.content');
+        const header = document.createElement('header');
+        const todoList = document.createElement('div');
+        todoList.classList.add('todo-list');
+
+        mainContent.append(header, todoList);
+
+        pageHeader(header, taskIcon, taskTitle);
+        checkTodos(todos, todoList);
+    }
+
+    function checkTodos(todos) {
+        if (todos.length) {
+            todos.forEach(todo => {
+                generateTodo(todo);
+            });
+        };
+    };
+
+    function pageHeader(header, icon, title) {
+        const pageCategory = document.createElement('h1'); // this is task icon or dash button icon
+        pageCategory.classList.add('material-symbols-outlined');
+        pageCategory.textContent = icon;
+
+        const titleContainer = document.createElement('div');
+        titleContainer.classList.add('title-container');
+
+        const pageTitle = document.createElement('h2');
+        pageTitle.textContent = title; //this is the title of the task or title of dash button
+
+        const todoCountContainer = document.createElement('div');
+        const todoCount = document.createElement('span');
+        todoCount.classList.add('todoCount');
+        todoCount.textContent = '0';
+
+        const addTodoBtn = document.createElement('button');
+        addTodoBtn.classList.add('add');
+        addTodoBtn.textContent = '+';
+
+        todoCountContainer.append(todoCount, addTodoBtn);
+        titleContainer.append(pageTitle, todoCountContainer);
+        header.append(pageCategory, titleContainer);
+    };
+
+    function generateTodo(todo) {
+        todoCount = document.querySelector('.todoCount');
+
+        const todoId = todo.getId();
+        const complete = todo.getComplete();
+        const taskId = todo.getParentId();
+
+        const mainContent = document.querySelector('.content');
+        const todoList = document.querySelector('.todo-list');
+
+        const todoItem = document.createElement('div');
+        todoItem.classList.add('todo');
+        if (complete) { todoItem.classList.add('complete') };
+
+        const checkbox = document.createElement('div');
+        checkbox.classList.add('checkbox');
+
+        const checkboxIcon = document.createElement('div');
+        checkboxIcon.classList.add('checkbox-icon');
+
+        checkbox.appendChild(checkboxIcon);
+
+        const todoInfo = document.createElement('div');
+        todoInfo.classList.add('title-input-container');
+
+        const titleInput = document.createElement('input');
+        titleInput.readOnly = true;
+        titleInput.type = 'text';
+        titleInput.name = 'title';
+        titleInput.classList.add('todo-title-input');
+        titleInput.value = `${todo.getTitle()}`;
+
+        const dueDate = document.createElement('span');
+        dueDate.textContent = todo.getDate();
+
+        const strikethrough = document.createElement('div');
+        strikethrough.classList.add('strikethrough');
+
+        todoInfo.append(titleInput, dueDate, strikethrough);
+
+        const todoBtnContainer = document.createElement('div');
+        const editBtn = document.createElement('button');
+        const deleteBtn = document.createElement('button');
+        if(complete) { editBtn.style.color = '#595959'};
+
+        editBtn.classList.add('edit', 'material-symbols-outlined');
+        deleteBtn.classList.add('delete', 'material-symbols-outlined');
+
+        editBtn.textContent = 'edit';
+        deleteBtn.textContent = 'delete';
+
+        todoBtnContainer.append(editBtn, deleteBtn);
+
+        todoItem.append(checkbox, todoInfo, todoBtnContainer);
+        todoList.appendChild(todoItem);
+        updateTodoCount();
+
+        mainContent.appendChild(todoList);
+
+        const clickables = [todoItem, todoInfo, editBtn, deleteBtn];
+        clickables.forEach(elem => {
+            elem.setAttribute('data-taskid', taskId);
+            elem.setAttribute('data-todoid', todoId);
+        });
+        todoListeners(clickables);
+    }
+
+    function updateTodoCount() {
+        const todoList = document.querySelector('.todo-list');
+        const todoCount = document.querySelector('.todoCount');
+
+        todoCount.textContent = `${todoList.children.length}`;
+    }
+
+    function todoListeners([todoItem, todoInfo, editBtn, deleteBtn]) {
+        const taskId = todoItem.getAttribute('data-taskid');
+        const todoId = todoItem.getAttribute('data-todoid');
+
+        const input = todoInfo.children[0];
+
+        todoInfo.addEventListener('click', toggleComplete);
+
+        function toggleComplete() {
+            todoItem.classList.toggle('complete');
+            toggleEditListener(getStatus());
+            sendChanges();
+        };
+
+        function getStatus() {
+            const isComplete = todoItem.classList.contains('complete');
+
+            return isComplete;
+        }
+
+        function sendChanges() {
+            const isComplete = getStatus();
+            const title = input.value;
+
+            pageControl.updateTodo(taskId, todoId, isComplete, title)
+        }
+
+        function toggleEditListener(bool) {
+            if(bool){
+                editBtn.style.color = '#595959';
+                editBtn.removeEventListener('click', editTodo);
+            } else {
+                editBtn.style.color = 'black';
+                editBtn.addEventListener('click', editTodo);
+            };
+        }
+
+        if(!getStatus()) {editBtn.addEventListener('click', editTodo)};
+
+        function editTodo() {
+            const status = editBtn.textContent;
+
+            if(status === 'edit') {
+                editBtn.textContent = 'done';
+                input.readOnly = false;
+                todoInfo.removeEventListener('click', toggleComplete);
+            } else {
+                editBtn.textContent = 'edit';
+                input.readOnly = true;
+                todoInfo.addEventListener('click', toggleComplete);
+
+                sendChanges();
+            }
+            
+        }
+    }
+
+    return { singleTaskPage };
 })();
 
 
@@ -561,7 +807,288 @@ return {singleTaskPage};
 
 ////////////////////////////////////////////////////ALL Task Pages//////////////////////////////////////////////////
 const allTasksModule = (function () {
-    function allTasksPage(tasks) {
+
+    function generateTaskCards(tasks) {
+        const taskContainer = document.querySelector('.tasks-container');
+
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            console.log(task);
+
+            const taskDiv = document.createElement('div');
+
+            const header = document.createElement('header');
+            header.classList.add('task-header');
+
+            const categoryIcon = document.createElement('span');
+            categoryIcon.classList.add('material-symbols-outlined');
+            categoryIcon.textContent = task.getCategory();
+
+            const taskTitle = document.createElement("input");
+            taskTitle.type = "text";
+            taskTitle.readOnly = true;
+            taskTitle.value = task.getTitle();
+
+            header.append(categoryIcon, taskTitle);
+
+            const section = document.createElement('section');
+
+            const todoCounter = document.createElement('div');
+            todoCounter.classList.add('todos-amount');
+
+            const todosText = document.createElement('span');
+            todosText.textContent = 'Todos';
+
+            const line = document.createElement('div');
+            line.classList.add('line');
+
+            const todoNumber = document.createElement('span');
+            todoNumber.textContent = task.getTodos().length;
+
+            todoCounter.append(todosText, line, todoNumber);
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.classList.add('task-button-container');
+
+            const editButton = document.createElement('button');
+            const deleteButton = document.createElement('button');
+
+            editButton.classList.add('material-symbols-outlined');
+            deleteButton.classList.add('material-symbols-outlined');
+
+            editButton.textContent = 'edit';
+            deleteButton.textContent = 'delete';
+
+            const clickables = [categoryIcon, taskTitle, editButton, deleteButton, taskDiv];
+            clickables.forEach(element => element.setAttribute('data-taskid', `${task.getId()}`));
+
+            buttonContainer.append(editButton, deleteButton);
+
+            section.append(todoCounter, buttonContainer);
+            taskDiv.append(header, section);
+
+            taskListeners(clickables);
+            taskContainer.appendChild(taskDiv);
+        };
+    };
+
+    function taskListeners([icon, titleInput, editBtn, deleteBtn, taskCard]) {
+        const taskId = taskCard.getAttribute('data-taskid');
+
+        taskCard.addEventListener('click', openTask);
+
+        function openTask() {
+            pageControl.clearContent();
+            pageControl.clearSelection();
+            singleTaskModule.singleTaskPage(storage.getTask(taskId));
+        }
+
+        editBtn.addEventListener('click', handleEditBtn);
+
+        function handleEditBtn(event) {
+            const status = event.target.textContent;
+
+            if (status === 'edit') {
+                cardEditable(true);
+
+            } else if (status === 'done') {
+                cardEditable(false);
+                updateTaskObj(taskId);
+                pageControl.saveAllTasks();
+                sidebar.updateListItem(taskId, icon, titleInput);
+
+            } else if (status === 'close') {
+                cardDeleteable(false);
+            };
+        }
+
+        function cardEditable(bool) {
+            const header = [icon, titleInput];
+            header.forEach(elem => elem.classList.toggle('edit', bool));
+            titleInput.readOnly = !(bool);
+
+            if (bool) {
+                editBtn.textContent = 'done';
+                icon.addEventListener('click', categoryModal);
+            } else {
+                editBtn.textContent = 'edit';
+                icon.removeEventListener('click', categoryModal);
+            };
+        }
+
+        function updateTaskObj(id) {
+            const category = icon.textContent;
+            const title = titleInput.value;
+
+            pageControl.updateTask(id, category, title);
+        }
+
+        function categoryModal() {
+            const modal = document.querySelector('#taskCategoryModal');
+            const modalContent = document.querySelector('#taskCategoryModal>div');
+            const closeBtn = document.querySelector('#closeCategoryModal');
+            const confirmBtn = document.querySelector('#confirmCategory');
+
+            generateCategoryBtns(modalContent);
+
+            modal.classList.toggle('hidden'); //displays the modal
+
+            closeBtn.addEventListener('click', closeModal);
+            confirmBtn.addEventListener('click', changeIcon);
+
+            function closeModal() {
+                modal.classList.toggle('hidden');
+                closeBtn.removeEventListener('click', closeModal);
+                confirmBtn.removeEventListener('click', changeIcon);
+                removeCategoryBtns();
+            };
+
+            function changeIcon() {
+                const selectedIcon = document.querySelector('input[name="category"]:checked').id;
+                icon.textContent = selectedIcon;
+                closeModal();
+            };
+        };
+
+        deleteBtn.addEventListener('click', handleDeleteBtn)
+
+        function handleDeleteBtn(event) {
+            const status = event.target.textContent;
+            console.log(status);
+
+            if (status === 'delete') {
+                icon.removeEventListener('click', categoryModal);
+                cardEditable(false);
+                cardDeleteable(true);
+            } else {
+                destroyTask(taskId);
+                checkForTasks();
+            };
+        }
+
+        function cardDeleteable(bool) {
+            taskCard.classList.toggle('delete', bool);
+
+            if (bool) {
+                editBtn.textContent = 'close';
+                deleteBtn.textContent = 'done';
+            } else {
+                editBtn.textContent = 'edit';
+                deleteBtn.textContent = 'delete';
+            };
+        };
+
+        function destroyTask(id) {
+            editBtn.removeEventListener('click', () => handleEditBtn);
+            deleteBtn.removeEventListener('click', () => handleDeleteBtn)
+            pageControl.deleteTask(id); //deletes from object containing all tasks
+            pageControl.saveAllTasks(); // overwrites localstorage 'allTasks'
+            storage.deleteItem(id); // hard deletes individual task from localstorage
+            taskCard.remove(); // removes card from DOM
+            sidebar.removeFromTaskList(id);
+            sidebar.updateCounters();
+        };
+    };
+
+    function checkForTasks() {
+        const taskContainer = document.querySelector('.tasks-container');
+        if (!taskContainer.firstElementChild) {
+            addTaskCard();
+        }
+    }
+
+    function addTaskCard() {
+        const taskContainer = document.querySelector('.tasks-container');
+
+        const addTask = document.createElement('div');
+        addTask.id = 'addTask';
+
+        const addIcon = document.createElement('span');
+        addIcon.classList.add('material-symbols-outlined');
+        addIcon.textContent = 'add_circle';
+
+        addTask.appendChild(addIcon);
+
+        taskContainer.appendChild(addTask);
+
+        addTask.addEventListener('click', () => {
+            addTaskModal();
+            updatePage();
+        })
+    }
+
+    function updatePage() {
+        pageControl.clearContent();
+        generatePageTemplate(storage.getArrayOfTasks());
+    }
+
+    function addTaskModal() {
+        const modal = document.querySelector('#taskAddModal');
+        const modalContent = document.querySelector('#taskAddModal>div');
+        const closeBtn = document.querySelector('#closeTaskModal');
+        const confirmBtn = document.querySelector('#confirmTask');
+
+        generateCategoryBtns(modalContent);
+
+        modal.classList.toggle('hidden');
+
+        closeBtn.addEventListener('click', closeModal);
+        confirmBtn.addEventListener('click', confirmTask);
+
+        function confirmTask() {
+            const title = document.querySelector('#taskTitle').value;
+            const category = document.querySelector('input[name="category"]:checked').id;
+            const task = createTask(title, category);
+            closeModal();
+            sidebar.updateCounters();
+            sidebar.addToTaskList(task);
+            updatePage();
+        }
+
+        function closeModal() {
+            modal.classList.toggle('hidden');
+            closeBtn.removeEventListener('click', closeModal);
+            confirmBtn.removeEventListener('click', confirmTask);
+            removeCategoryBtns();
+        };
+    };
+
+
+    function generateCategoryBtns(parent) {
+        const categories = ['school', 'home', 'work', 'exercise', 'savings', 'pets', 'sound_detection_dog_barking', 'grocery', 'flight_takeoff', 'family_restroom'];
+        const container = document.createElement('div');
+        container.classList.add('icons-container');
+
+        categories.forEach(category => {
+            const categoryDiv = document.createElement('div');
+            const radio = document.createElement('input');
+            const label = document.createElement('label');
+
+            radio.type = 'radio';
+            radio.name = 'category';
+            radio.id = category;
+
+            label.htmlFor = category;
+            label.textContent = category;
+            label.classList.add('material-symbols-outlined');
+
+            categoryDiv.append(radio, label);
+            container.appendChild(categoryDiv);
+            parent.insertBefore(container, parent.lastElementChild);
+        });
+    };
+
+    function removeCategoryBtns() {
+        const container = document.querySelector('.icons-container');
+
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+
+        container.remove();
+    };
+
+    function generatePageTemplate(tasks) {
         const mainContent = document.querySelector('.content');
 
         const pageTitle = document.createElement('h1');
@@ -573,180 +1100,14 @@ const allTasksModule = (function () {
         mainContent.append(pageTitle, taskContainer);
 
         if (tasks.length) {
-            for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
-                console.log(task);
-
-                const taskDiv = document.createElement('div');
-
-                const header = document.createElement('header');
-                header.classList.add('task-header');
-
-                const categoryIcon = document.createElement('span');
-                categoryIcon.classList.add('material-symbols-outlined');
-                categoryIcon.textContent = task.getCategory();
-
-                const taskTitle = document.createElement("input");
-                taskTitle.type = "text";
-                taskTitle.readOnly = true;
-                taskTitle.value = task.getTitle();
-
-                header.append(categoryIcon, taskTitle);
-
-                const section = document.createElement('section');
-
-                const todoCounter = document.createElement('div');
-                todoCounter.classList.add('todos-amount');
-
-                const todosText = document.createElement('span');
-                todosText.textContent = 'Todos';
-
-                const line = document.createElement('div');
-                line.classList.add('line');
-
-                const todoNumber = document.createElement('span');
-                todoNumber.textContent = task.getTodos().length;
-
-                todoCounter.append(todosText, line, todoNumber);
-
-                const buttonContainer = document.createElement('div');
-                buttonContainer.classList.add('task-button-container');
-
-                const editButton = document.createElement('button');
-                const deleteButton = document.createElement('button');
-
-                editButton.classList.add('material-symbols-outlined');
-                deleteButton.classList.add('material-symbols-outlined');
-
-                editButton.textContent = 'edit';
-                deleteButton.textContent = 'delete';
-
-                const clickables = [categoryIcon, taskTitle, editButton, deleteButton, taskDiv];
-                clickables.forEach(element => element.setAttribute('data-taskid', `${task.getId()}`));
-
-                buttonContainer.append(editButton, deleteButton);
-
-                section.append(todoCounter, buttonContainer);
-                taskDiv.append(header, section);
-
-                taskListeners(clickables);
-                taskContainer.appendChild(taskDiv);
-            };
+            generateTaskCards(tasks);
         } else {
-            const addTask = document.createElement('div');
-            addTask.id = 'addTask';
-
-            const addIcon = document.createElement('span');
-            addIcon.classList.add('material-symbols-outlined');
-            addIcon.textContent = 'add_circle';
-
-            addTask.appendChild(addIcon);
-
-            taskContainer.appendChild(addTask);
+            addTaskCard();
         };
+    }
 
-        function taskListeners([icon, titleInput, editBtn, deleteBtn, taskCard]) {
-            const taskId = taskCard.getAttribute('data-taskid');
-
-            editBtn.addEventListener('click', handleEditBtn);
-
-            function handleEditBtn(event) {
-                const status = event.target.textContent;
-
-                if (status === 'edit') {
-                    cardEditable(true);
-
-                } else if (status === 'done') {
-                    cardEditable(false);
-                    updateTaskObj(taskId);
-                    pageControl.saveAllTasks();
-
-                } else if (status === 'close') {
-                    cardDeleteable(false);
-                };
-            }
-
-            function cardEditable(bool) {
-                const header = [icon, titleInput];
-                header.forEach(elem => elem.classList.toggle('edit', bool));
-                titleInput.readOnly = !(bool);
-
-                if (bool) {
-                    editBtn.textContent = 'done';
-                    icon.addEventListener('click', modalListeners);
-                } else {
-                    editBtn.textContent = 'edit';
-                    icon.removeEventListener('click', modalListeners);
-                };
-            }
-
-            function updateTaskObj(id) {
-                const category = icon.textContent;
-                const title = titleInput.value;
-
-                pageControl.updateTask(id, category, title);
-            }
-
-            function modalListeners() {
-                const modal = document.querySelector('#myModal');
-                const closeBtn = document.querySelector('#closeModal');
-                const confirmBtn = document.querySelector('#modalConfirm');
-
-                modal.classList.toggle('hidden'); //displays the modal
-
-                closeBtn.addEventListener('click', closeModal);
-                confirmBtn.addEventListener('click', changeIcon);
-
-                function closeModal() {
-                    modal.classList.toggle('hidden');
-                    closeBtn.removeEventListener('click', closeModal);
-                    confirmBtn.removeEventListener('click', changeIcon);
-                };
-
-                function changeIcon() {
-                    const selectedIcon = document.querySelector('input[name="category"]:checked').id;
-                    icon.textContent = selectedIcon;
-                    closeModal();
-                };
-            };
-
-            deleteBtn.addEventListener('click', handleDeleteBtn)
-
-            function handleDeleteBtn(event) {
-                const status = event.target.textContent;
-                console.log(status);
-
-                if (status === 'delete') {
-                    icon.removeEventListener('click', modalListeners);
-                    cardEditable(false);
-                    cardDeleteable(true);
-                } else {
-                    destroyTask(taskId);
-                    //update sidebar values
-                };
-            }
-
-            function cardDeleteable(bool) {
-                taskCard.classList.toggle('delete', bool);
-
-                if (bool) {
-                    editBtn.textContent = 'close';
-                    deleteBtn.textContent = 'done';
-                } else {
-                    editBtn.textContent = 'edit';
-                    deleteBtn.textContent = 'delete';
-                };
-            };
-
-            function destroyTask(id) {
-                editBtn.removeEventListener('click', () => handleEditBtn);
-                deleteBtn.removeEventListener('click', () => handleDeleteBtn)
-                pageControl.deleteTask(id); //deletes from object containing all tasks
-                pageControl.saveAllTasks(); // overwrites localstorage 'allTasks'
-                storage.deleteItem(id); // hard deletes individual task from localstorage
-                taskCard.remove(); // removes card from DOM
-            };
-        };
+    function allTasksPage(tasks) {
+        generatePageTemplate(tasks)
     };
     return { allTasksPage };
 })();
@@ -760,5 +1121,3 @@ const allTasksModule = (function () {
 storage.checkStorage();
 //generateExample();
 sidebar.updateCounters();
-sidebar.populateTaskList(storage.getArrayOfTasks());
-
