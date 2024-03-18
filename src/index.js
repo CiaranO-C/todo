@@ -227,8 +227,7 @@ const todoModule = (function () {
         },
         getDate: function () {
             const date = new Date(this.dueDate);
-            const stringDate = date.toLocaleDateString();
-            return stringDate;
+            return date;
         },
         getTitle: function () {
             return this.title
@@ -311,16 +310,16 @@ function generateExample() {
     const taskOne = createTask('Dog Food', 'pet_supplies');
 
     //these will get passed the UID of the add button which should match that of the parent Task (whether general or user made);
-    const todoOne = createTodo('Buy kibble', 'make sure it is chicken variety', new Date(new Date().toDateString()).toISOString(), '1');
-    const todoTwo = createTodo('Buy yak sticks', 'look for dark smokey ones', new Date(new Date().toDateString()).toISOString(), '2');
+    const todoOne = createTodo('Buy kibble', 'make sure it is chicken variety', new Date(new Date().toDateString()).toISOString(), 'counter_1');
+    const todoTwo = createTodo('Buy yak sticks', 'look for dark smokey ones', new Date(new Date().toDateString()).toISOString(), 'counter_2');
 
     attachToTask(taskOne, todoOne);
     attachToTask(taskOne, todoTwo);
 
     const taskTwo = createTask('Dog Training', 'pets');
 
-    const todoThree = createTodo('Train paw', 'do training stuff', new Date(new Date().toDateString()).toISOString(), '1');
-    const todoFour = createTodo('Train Sit', 'Do training stuff', new Date(new Date().toDateString()).toISOString(), '3');
+    const todoThree = createTodo('Train paw', 'do training stuff', new Date(new Date().toDateString()).toISOString(), 'counter_1');
+    const todoFour = createTodo('Train Sit', 'Do training stuff', new Date(new Date().toDateString()).toISOString(), 'counter_3');
 
 
     //attach to task gives the parent ID
@@ -353,6 +352,19 @@ const pageControl = (function () {
 
     let displayArray = [];
     const tasksObject = {};
+    const generalTask = {};
+
+
+    function getPage() {
+        const page = {};
+
+        const btn = document.querySelector('.selected');
+
+        page.icon = btn.children[0].children[0].textContent;
+        page.title = btn.children[1].textContent;
+
+        return page;
+    }
 
     function collateTodos(tasks) {
         const allTodos = [];
@@ -395,6 +407,17 @@ const pageControl = (function () {
         saveAllTasks();
     };
 
+    function deleteTodo(taskId, todoId) {
+        const task = tasksObject[taskId];
+        const todos = task.getTodos();
+
+        const index = todos.findIndex(todo => todo.getId() === todoId);
+        task.removeTodo(index);
+
+        storage.save(taskId, task);
+        saveAllTasks();
+    }
+
     function updateTodo(taskId, todoId, status, title) {
         const task = tasksObject[taskId];
         const todos = task.getTodos();
@@ -419,6 +442,14 @@ const pageControl = (function () {
 
     function saveAllTasks() {
         storage.save('allTasks', tasksObject);
+    }
+
+    function demo() {
+        const dict = {}
+        const prop = "title"
+        if (dict[prop] === criteria) {
+            return dict[prop]
+        }
     }
 
     function searchByTask(tasks) {
@@ -457,28 +488,40 @@ const pageControl = (function () {
         clearSelection();
         showSelected(todayBtn);
         const tasks = storage.getArrayOfTasks();
-        displayArray = filterTodos(tasks, 'dueDate', today);
-        console.log(tasks);
-        console.log(displayArray);
-        //todaysTodosPage(displayArray);
+        todoArray = filterTodos(tasks, 'dueDate', today);
+        loadPage(todoArray);
+    }
+
+    function loadPage(todoArray) {
+        const page = getPage();
+        page.todos = todoArray;
+        const mainContent = document.querySelector('.content');
+        const header = document.createElement('header');
+        const todoList = document.createElement('div');
+        todoList.classList.add('todo-list');
+
+        mainContent.append(header, todoList);
+
+        singleTaskModule.pageHeader(header, page.icon, page.title);
+        page.todos.forEach(todo => singleTaskModule.generateTodo(todo));
     }
 
     function displayThisWeek() {
         clearSelection();
         showSelected(thisWeekBtn);
         const tasks = storage.getArrayOfTasks();
-        displayArray = thisWeeksTodos(tasks);
+        todoArray = thisWeeksTodos(tasks);
         console.log(displayArray);
-        //thisWeeksTodos(displayArray);
+        loadPage(todoArray);
     }
 
     function displayImportant() {
         clearSelection();
         showSelected(importantBtn);
         const tasks = storage.getArrayOfTasks();
-        displayArray = filterTodos(tasks, 'priority', '1');
+        todoArray = filterTodos(tasks, 'priority', 'counter_3');
         console.log(displayArray);
-        //importantTodos(displayArray);
+        loadPage(todoArray)
     }
 
     window.addEventListener('DOMContentLoaded', displayAllTasks);
@@ -508,7 +551,7 @@ const pageControl = (function () {
         console.log('content cleared!');
     };
 
-    return { clearContent, clearSelection, filterTodos, updateTodo, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
+    return { clearContent, clearSelection, filterTodos, updateTodo, deleteTodo, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
 })();
 
 
@@ -543,12 +586,11 @@ const sidebar = (function () {
         const tasks = storage.getArrayOfTasks();
         dailyTodoCount.textContent = pageControl.filterTodos(tasks, 'dueDate', new Date(new Date().toDateString()).toISOString()).length;
         weeklyTodoCount.textContent = pageControl.thisWeeksTodos(tasks).length;
-        importantTodoCount.textContent = pageControl.filterTodos(tasks, 'priority', '1').length;
+        importantTodoCount.textContent = pageControl.filterTodos(tasks, 'priority', 'counter_3').length;
         taskCount.textContent = tasks.length;
     }
 
     function addToTaskList(task) {
-        console.log(task);
         const listItem = document.createElement('div');
         listItem.classList.add('list-item');
 
@@ -569,6 +611,7 @@ const sidebar = (function () {
             pageControl.clearSelection();
             pageControl.clearContent();
             singleTaskModule.singleTaskPage(task);
+            console.log(task);
         };
     };
 
@@ -612,6 +655,20 @@ const sidebar = (function () {
 
 
 
+
+/////////////////////////////////////////display todos module//////////////////////////////////////////////////
+collatedTodos = (function () {
+    function dashTodoPage(page) {
+        console.log(page);
+    }
+
+    return { dashTodoPage }
+})();
+
+
+
+
+
 ////////////////////////////////////////SINGLE TASK PAGES//////////////////////////////////////////////////
 singleTaskModule = (function () {
 
@@ -619,6 +676,7 @@ singleTaskModule = (function () {
         const taskIcon = task.getCategory();
         const taskTitle = task.getTitle();
         const todos = task.getTodos();
+        const id = task.getId();
 
         const mainContent = document.querySelector('.content');
         const header = document.createElement('header');
@@ -627,8 +685,33 @@ singleTaskModule = (function () {
 
         mainContent.append(header, todoList);
 
-        pageHeader(header, taskIcon, taskTitle);
-        checkTodos(todos, todoList);
+        pageHeader(header, taskIcon, taskTitle, id);
+        checkTodos(todos);
+    }
+
+    function appendTodoItem() {
+
+    }
+
+    function addTodo() {
+        const btn = document.querySelector('#todoAdd');
+        const parentTaskId = btn.getAttribute('data-taskid');
+        console.log(btn);
+        console.log(parentTaskId);
+        /*
+        - add button should know which task page is currently in view so it know which object to add the todo 
+            give add button a data task id attribute when rendering page.
+            this will either be task.getID/taskID or generalTask
+        - if no element contains class '.selected', 
+        - get the add todo card
+        - check if card off screen
+        - if off screen scroll card into view
+        - make user also focus on input?
+        - should have x and tick as buttons. 
+        - x will cancel the new todo entry
+        - tick confirms it
+        - to confirm must have title due date and priority
+        */
     }
 
     function checkTodos(todos) {
@@ -639,7 +722,7 @@ singleTaskModule = (function () {
         };
     };
 
-    function pageHeader(header, icon, title) {
+    function pageHeader(header, icon, title, taskId = 'general') {
         const pageCategory = document.createElement('h1'); // this is task icon or dash button icon
         pageCategory.classList.add('material-symbols-outlined');
         pageCategory.textContent = icon;
@@ -657,78 +740,153 @@ singleTaskModule = (function () {
 
         const addTodoBtn = document.createElement('button');
         addTodoBtn.classList.add('add');
+        addTodoBtn.id = 'todoAdd';
         addTodoBtn.textContent = '+';
+        addTodoBtn.setAttribute('data-taskid', taskId);
+
+        addTodoBtn.addEventListener('click', newTodo); //what about removing this listener when page clears?
 
         todoCountContainer.append(todoCount, addTodoBtn);
         titleContainer.append(pageTitle, todoCountContainer);
         header.append(pageCategory, titleContainer);
     };
 
-    function generateTodo(todo) {
-        todoCount = document.querySelector('.todoCount');
+    function todoTemplate() {
+        const template = document.createElement('div');                    
+        template.classList.add('todo');   
 
-        const todoId = todo.getId();
-        const complete = todo.getComplete();
-        const taskId = todo.getParentId();
+        const checkbox = document.createElement('div');                     
+        checkbox.classList.add('checkbox');   
 
-        const mainContent = document.querySelector('.content');
-        const todoList = document.querySelector('.todo-list');
-
-        const todoItem = document.createElement('div');
-        todoItem.classList.add('todo');
-        if (complete) { todoItem.classList.add('complete') };
-
-        const checkbox = document.createElement('div');
-        checkbox.classList.add('checkbox');
-
-        const checkboxIcon = document.createElement('div');
+        const checkboxIcon = document.createElement('div');                 
         checkboxIcon.classList.add('checkbox-icon');
 
-        checkbox.appendChild(checkboxIcon);
+        checkbox.appendChild(checkboxIcon); 
 
-        const todoInfo = document.createElement('div');
-        todoInfo.classList.add('title-input-container');
+        const todoInfo = document.createElement('div');                     
+        todoInfo.classList.add('title-input-container');                    
 
         const titleInput = document.createElement('input');
-        titleInput.readOnly = true;
-        titleInput.type = 'text';
-        titleInput.name = 'title';
-        titleInput.classList.add('todo-title-input');
-        titleInput.value = `${todo.getTitle()}`;
 
-        const dueDate = document.createElement('span');
-        dueDate.textContent = todo.getDate();
+        titleInput.type = 'text';                                           
+        titleInput.name = 'title';                                          
+        titleInput.classList.add('todo-title-input');     
+
+        const priorityDateContainer = document.createElement('div');       
+        priorityDateContainer.classList.add('priorityDate'); 
+
+        const priorityIcon = document.createElement('span');                
+        priorityIcon.classList.add('material-symbols-outlined', 'priority');
+       
+        const dueDate = document.createElement('input');
+        dueDate.type = 'date';
+
+        priorityDateContainer.append(priorityIcon, dueDate);
 
         const strikethrough = document.createElement('div');
         strikethrough.classList.add('strikethrough');
 
-        todoInfo.append(titleInput, dueDate, strikethrough);
+        todoInfo.append(titleInput, priorityDateContainer, strikethrough);
 
         const todoBtnContainer = document.createElement('div');
-        const editBtn = document.createElement('button');
-        const deleteBtn = document.createElement('button');
-        if(complete) { editBtn.style.color = '#595959'};
+        todoBtnContainer.classList.add('todo-buttons');
+        const leftBtn = document.createElement('button');
+        const rightBtn = document.createElement('button');
 
-        editBtn.classList.add('edit', 'material-symbols-outlined');
-        deleteBtn.classList.add('delete', 'material-symbols-outlined');
+        leftBtn.classList.add('material-symbols-outlined');
+        rightBtn.classList.add('material-symbols-outlined');
+
+        todoBtnContainer.append(leftBtn, rightBtn);
+
+        template.append(checkbox, todoInfo, todoBtnContainer);
+
+        return [template, todoInfo, titleInput, priorityIcon, dueDate, leftBtn, rightBtn]
+    }
+
+    function newTodo(event) {
+        event.target.removeEventListener('click', newTodo);
+        const [todoItem, todoInfo, titleInput, priorityIcon, dueDate, cancelBtn, confirmBtn] = todoTemplate();
+        appendToList(todoItem);
+        todoItem.style.backgroundColor = 'rgba(35, 35, 35, 0.5)';
+        titleInput.focus();
+        // priopirtyIcon - apply hover menu
+        priorityIcon.textContent = 'arrow_circle_down';
+        
+        dueDate.style.colorScheme = 'dark';
+        dueDate.min = new Date().toISOString().split('T')[0]; ;
+        cancelBtn.textContent = 'close';                                      
+        confirmBtn.textContent = 'done'; 
+
+        cancelBtn.style.color = 'white';
+        confirmBtn.style.color = 'white';
+        // cancelBtn - remove and re apply add todo listener
+        // confirmBtn - replace with new Todo() passed to generateTodo and re apply add todo listener
+
+    }
+
+    function appendToList(todo) {       
+        const todoList = document.querySelector('.todo-list');      
+        todoList.appendChild(todo);   
+    }
+
+    function generateTodo(todo) {
+       // todoCount = document.querySelector('.todoCount');
+
+        const [todoItem, todoInfo, titleInput, priorityIcon, dueDate, editBtn, deleteBtn] = todoTemplate();
+
+        const todoId = todo.getId();
+        const complete = todo.getComplete();
+        const taskId = todo.getParentId();
+        const priority = todo.getPriority();
+        const title = todo.getTitle();
+        const date = todo.getDate().toISOString().split('T')[0];          
+                                    
+        if (complete) { todoItem.classList.add('complete') };               
+
+        titleInput.readOnly = true;                                                             
+        titleInput.value = `${title}`;                            
+
+        priorityIcon.textContent = priority;                            
+        switch (priority) {
+            case 'counter_1':
+                priorityIcon.classList.add('low');
+                break;
+            case 'counter_2':
+                priorityIcon.classList.add('medium')
+                break;
+            case 'counter_3':
+                priorityIcon.classList.add('high')
+                break;
+        };
+
+        dueDate.value = date    
+        dueDate.readOnly = true;                                      
+
+        if (complete) { editBtn.classList.add('inactive', true) };              
 
         editBtn.textContent = 'edit';
         deleteBtn.textContent = 'delete';
 
-        todoBtnContainer.append(editBtn, deleteBtn);
-
-        todoItem.append(checkbox, todoInfo, todoBtnContainer);
-        todoList.appendChild(todoItem);
+        appendToList(todoItem);
         updateTodoCount();
 
-        mainContent.appendChild(todoList);
-
-        const clickables = [todoItem, todoInfo, editBtn, deleteBtn];
+        const clickables = [todoItem, todoInfo, priorityIcon, dueDate, editBtn, deleteBtn];
         clickables.forEach(elem => {
             elem.setAttribute('data-taskid', taskId);
             elem.setAttribute('data-todoid', todoId);
         });
         todoListeners(clickables);
+    }
+
+    function togglePriorityStyle(icon, prevPriority, newPriority) {
+        const classOf = {
+            "counter_1": "low",
+            "counter_2": "medium",
+            "counter_3": "high",  
+        };
+
+        icon.classList.toggle(`${classOf[prevPriority]}`, false);
+        icon.classList.toggle(`${classOf[newPriority]}`, true);
     }
 
     function updateTodoCount() {
@@ -738,7 +896,7 @@ singleTaskModule = (function () {
         todoCount.textContent = `${todoList.children.length}`;
     }
 
-    function todoListeners([todoItem, todoInfo, editBtn, deleteBtn]) {
+    function todoListeners([todoItem, todoInfo, priorityIcon, dueDate, editBtn, deleteBtn]) {
         const taskId = todoItem.getAttribute('data-taskid');
         const todoId = todoItem.getAttribute('data-todoid');
 
@@ -766,36 +924,76 @@ singleTaskModule = (function () {
         }
 
         function toggleEditListener(bool) {
-            if(bool){
-                editBtn.style.color = '#595959';
+            if (bool) {
+                editBtn.classList.toggle('inactive', true);
                 editBtn.removeEventListener('click', editTodo);
             } else {
-                editBtn.style.color = 'black';
+                editBtn.classList.toggle('inactive', false);
                 editBtn.addEventListener('click', editTodo);
             };
         }
 
-        if(!getStatus()) {editBtn.addEventListener('click', editTodo)};
+        if (!getStatus()) { editBtn.addEventListener('click', editTodo) };
 
         function editTodo() {
             const status = editBtn.textContent;
 
-            if(status === 'edit') {
+            if (status === 'edit') {
                 editBtn.textContent = 'done';
                 input.readOnly = false;
+                dueDate.readOnly = false;
                 todoInfo.removeEventListener('click', toggleComplete);
-            } else {
+            } else if (status === 'done') {
                 editBtn.textContent = 'edit';
                 input.readOnly = true;
+                dueDate.readOnly = true;
                 todoInfo.addEventListener('click', toggleComplete);
 
                 sendChanges();
-            }
-            
+            } else if (status === 'close') {
+                todoItem.classList.toggle('delete', false);
+                todoItem.style.backgroundColor = '';
+                editBtn.textContent = 'edit';
+                deleteBtn.textContent = 'delete';
+                if (getStatus()) {
+                    editBtn.removeEventListener('click', editTodo);
+                    editBtn.classList.toggle('inactive', true);
+                }
+                todoInfo.addEventListener('click', toggleComplete);
+
+            };
         }
+
+        deleteBtn.addEventListener('click', confirmDelete);
+
+        function confirmDelete() {
+            const status = deleteBtn.textContent;
+            if (status === 'delete') {
+                todoInfo.removeEventListener('click', toggleComplete);
+                editBtn.addEventListener('click', editTodo);
+                editBtn.textContent = 'close';
+                editBtn.classList.toggle('inactive', false);
+                deleteBtn.textContent = 'done';
+                todoItem.style.backgroundColor = '#ff000033';
+            } else if (status === 'done') {
+                pageControl.deleteTodo(taskId, todoId);
+                destroyTodo();
+                updateTodoCount();
+            };
+        }
+
+        function destroyTodo() {
+            todoClone = todoItem.cloneNode(true);
+            todoItem.replaceWith(todoClone);
+
+            while (todoClone.firstChild) {
+                todoClone.removeChild(todoClone.firstChild);
+            };
+            todoClone.remove();
+        };
     }
 
-    return { singleTaskPage };
+    return { singleTaskPage, pageHeader, generateTodo, appendToList };
 })();
 
 
@@ -872,15 +1070,21 @@ const allTasksModule = (function () {
         };
     };
 
-    function taskListeners([icon, titleInput, editBtn, deleteBtn, taskCard]) {
+    function taskListeners(clickables) {
+        const [icon, titleInput, editBtn, deleteBtn, taskCard] = clickables
         const taskId = taskCard.getAttribute('data-taskid');
 
         taskCard.addEventListener('click', openTask);
 
-        function openTask() {
-            pageControl.clearContent();
-            pageControl.clearSelection();
-            singleTaskModule.singleTaskPage(storage.getTask(taskId));
+        function openTask(event) {
+            const element = event.target;
+            const cardBtns = [icon, titleInput, editBtn, deleteBtn]
+
+            if (!cardBtns.includes(element)) {
+                pageControl.clearContent();
+                pageControl.clearSelection();
+                singleTaskModule.singleTaskPage(storage.getTask(taskId));
+            };
         }
 
         editBtn.addEventListener('click', handleEditBtn);
@@ -1013,13 +1217,13 @@ const allTasksModule = (function () {
 
         addTask.addEventListener('click', () => {
             addTaskModal();
-            updatePage();
         })
     }
 
     function updatePage() {
         pageControl.clearContent();
         generatePageTemplate(storage.getArrayOfTasks());
+        console.log('page updated!');
     }
 
     function addTaskModal() {
@@ -1036,13 +1240,24 @@ const allTasksModule = (function () {
         confirmBtn.addEventListener('click', confirmTask);
 
         function confirmTask() {
-            const title = document.querySelector('#taskTitle').value;
-            const category = document.querySelector('input[name="category"]:checked').id;
-            const task = createTask(title, category);
-            closeModal();
-            sidebar.updateCounters();
-            sidebar.addToTaskList(task);
-            updatePage();
+            const currentPage = document.querySelector('.selected');
+            const title = document.querySelector('#taskTitle');
+            const category = document.querySelector('input[name="category"]:checked');
+
+            if (!title.value || !category) {
+                title.classList.toggle('error');
+                setTimeout(() => {
+                    title.classList.toggle('error');
+                }, 200);
+            } else {
+                const task = createTask(title.value, category.id);
+                sidebar.updateCounters();
+                sidebar.addToTaskList(task);
+                if (currentPage.classList.contains('all')) {
+                    updatePage();
+                };
+                closeModal();
+            }
         }
 
         function closeModal() {
@@ -1109,6 +1324,13 @@ const allTasksModule = (function () {
     function allTasksPage(tasks) {
         generatePageTemplate(tasks)
     };
+
+    const createTaskBtn = document.querySelector('#taskAdd');
+
+    createTaskBtn.addEventListener('click', () => {
+        addTaskModal();
+    });
+
     return { allTasksPage };
 })();
 

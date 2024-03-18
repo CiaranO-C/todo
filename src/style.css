@@ -417,7 +417,7 @@ header h1 {
     grid-column: 1 / -1;
     justify-self: center;
     padding: 11px;
-    border-bottom: 1px solid;
+    font-size: 35px;
 }
 
 .title-container {
@@ -443,6 +443,7 @@ header h1 {
 }
 
 .title-input-container {
+    display: flex;
     position: relative;
     width: 100%;
 }
@@ -462,6 +463,10 @@ header h1 {
     cursor: default;
 }
 
+.todo input[type=date] {
+   width: 115px;
+}
+
 .todo input:focus {
     outline: none;
 }
@@ -479,20 +484,32 @@ header h1 {
     gap: 10px;
 }
 
+.todo-buttons {
+    display: flex;
+}
+
 .todo:hover {
     background-color: rgba(255, 255, 255, 0.201);
 }
 
 .todo>div {
-    display: flex;
     align-items: center;
+}
+
+.priority {
+    cursor: pointer;
+    position: relative;
+    top: 1.5px;
+}
+
+.priorityDate {
+    display: flex;
+    gap: 10px;
 }
 
 .todo-title {
     position: relative;
 }
-
-
 
 @keyframes strike {
     0% {
@@ -554,6 +571,10 @@ header h1 {
     color: white;
 }
 
+.todo .delete {
+
+}
+
 @keyframes slideIn {
     0% {
         transform: scaleX(0);
@@ -594,6 +615,22 @@ header h1 {
     flex-direction: column;
     align-items: center;
     gap: 16px;
+}
+
+#taskTitle {
+    background-color: rgba(255, 255, 255, 0);
+    border: none;
+    border-bottom: 1px solid black;
+    padding: 3px;
+    font-family: inherit;
+}
+
+#taskTitle:focus {
+    outline: none;
+}
+
+#taskTitle.error {
+    background-color: red;
 }
 
 .modal-category>header {
@@ -676,6 +713,32 @@ header h1 {
 
 .hidden {
     display: none;
+}
+
+.todo .delete {
+    background-color: #f24a4a;
+}
+
+.todo .delete:hover {
+    background-color: #f24a4a;
+}
+
+.todo .inactive,
+.todo .inactive:hover {
+    color: #595959;
+    cursor: default;
+}
+
+.low {
+    color: rgb(181, 234, 186);
+}
+
+.medium {
+    color: rgb(249, 216, 141);
+}
+
+.high {
+    color: rgb(248, 96, 96);
 }
 
 @media screen and (max-width: 1230px) {
