@@ -262,11 +262,7 @@ const todoModule = (function () {
 ////////////////////////////////////////////////Task Utility Functions////////////////////////////////////////////////
 
 //BOTH USED IN THE CREATION OF NEW TASKS/TODOS
-function attachToTask(task, todo) {
-    task.setTodo(todo);
-    todo.parentTask = task.getId();
-    task.saveTask();
-}
+
 
 function createTask(title, category) {
     const task = new tasksModule.Task();
@@ -290,10 +286,9 @@ function filterAllTasks(tasks, category) {
 };
 
 ////////////////////////////////////////////////Todo Utility Functions////////////////////////////////////////////////
-function createTodo(title, description, dueDate, priority) {
+function createTodo(title, dueDate, priority) {
     const todo = new todoModule.Todo();
     todo.setTitle(title);
-    todo.setDescription(description);
     todo.setDate(dueDate);
     todo.setPriority(priority);
     todo.setId();
@@ -364,6 +359,13 @@ const pageControl = (function () {
         page.title = btn.children[1].textContent;
 
         return page;
+    }
+
+    function attachToTask(taskId, todo) {
+        const task = tasksObject[taskId];
+        task.setTodo(todo);
+        todo.parentTask = task.getId();
+        task.saveTask();
     }
 
     function collateTodos(tasks) {
@@ -442,14 +444,6 @@ const pageControl = (function () {
 
     function saveAllTasks() {
         storage.save('allTasks', tasksObject);
-    }
-
-    function demo() {
-        const dict = {}
-        const prop = "title"
-        if (dict[prop] === criteria) {
-            return dict[prop]
-        }
     }
 
     function searchByTask(tasks) {
@@ -551,7 +545,7 @@ const pageControl = (function () {
         console.log('content cleared!');
     };
 
-    return { clearContent, clearSelection, filterTodos, updateTodo, deleteTodo, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
+    return { attachToTask, clearContent, clearSelection, filterTodos, updateTodo, deleteTodo, thisWeeksTodos, addToAllTasks, saveAllTasks, deleteTask, updateTask };
 })();
 
 
@@ -804,7 +798,10 @@ singleTaskModule = (function () {
     }
 
     function newTodo(event) {
-        event.target.removeEventListener('click', newTodo);
+        const addButton = event.target;
+        const taskId = addButton.getAttribute('data-taskid');
+        
+        addButton.removeEventListener('click', newTodo);
         const [todoItem, todoInfo, titleInput, priorityIcon, dueDate, cancelBtn, confirmBtn] = todoTemplate();
         appendToList(todoItem);
         todoItem.style.backgroundColor = 'rgba(35, 35, 35, 0.5)';
@@ -819,8 +816,29 @@ singleTaskModule = (function () {
 
         cancelBtn.style.color = 'white';
         confirmBtn.style.color = 'white';
-        // cancelBtn - remove and re apply add todo listener
-        // confirmBtn - replace with new Todo() passed to generateTodo and re apply add todo listener
+        cancelBtn.addEventListener('click', deleteTemplate, {once:true}); //- remove and re apply add todo listener
+        confirmBtn.addEventListener('click', confirmTodo, {once:true}) //- replace with new Todo() passed to generateTodo and re apply add todo listener
+
+        function deleteTemplate() {
+            while(todoItem.firstElementChild){
+                todoItem.removeChild(todoItem.firstElementChild);
+            }
+            todoItem.remove();
+            addButton.addEventListener('click', newTodo);
+        };
+
+        function confirmTodo(){
+            const title = titleInput.value;
+            const date = dueDate.value;
+            const priority = priorityIcon.textContent;
+
+            const todo = createTodo(title, date, priority);
+            pageControl.attachToTask(taskId, todo);
+            pageControl.saveAllTasks();
+
+            deleteTemplate();
+            generateTodo(todo);
+        }
 
     }
 
