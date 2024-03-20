@@ -112,6 +112,11 @@ input[type="search"]::-webkit-search-results-decoration {
     transition: 0.6s;
 }
 
+.list-item.selected{
+border: none;
+background-color: rgba(255, 255, 255, 0.13);
+}
+
 #general {
     border-bottom: 2px solid #1e1e1e;
 }
@@ -237,16 +242,44 @@ header h1 {
     top: -5px;
 }
 
-#deleteAll {
-    height: 38px;
-    width: 103px;
+.header-btn-container {
+    display: flex;
+    gap: 5px;
+}
+
+.header-btn-container button {
+    height: 40px;
+    width: 85px;
     font-family: inherit;
-    border: none;
-    border-radius: 7px;
+    border: 1.5px solid black;
+    border-radius: 11px;
     background-color: #232323;
     color: #efefef;
     transition: 0.2s;
     cursor: pointer;
+    text-wrap: wrap;
+    font-size: 12px;
+}
+
+#cancel {
+    position: relative;
+    left: 90px;
+    opacity: 0;
+    z-index: 0;
+    transition: 0.5s;
+}
+
+#cancel.active {
+    left: 0px;
+    opacity: 1;
+}
+
+#cancel:hover {
+    border-color: #efefef;
+}
+
+#deleteAll {
+    z-index: 1;
 }
 
 #deleteAll:hover {
@@ -464,7 +497,7 @@ header h1 {
 }
 
 .todo input[type=date] {
-   width: 115px;
+    width: 115px;
 }
 
 .todo input:focus {
@@ -496,10 +529,36 @@ header h1 {
     align-items: center;
 }
 
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-options {
+    display: flex;
+    gap: 10px;
+    position: absolute;
+    background-color: rgb(35, 35, 35);
+    min-width: 80px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    z-index: 1;
+}
+
+.dropdown-options span {
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, 0);
+}
+
+.dropdown-options span:hover {
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 10px;
+}
+
 .priority {
     cursor: pointer;
     position: relative;
-    top: 1.5px;
+    top: 3.5px;
 }
 
 .priorityDate {
@@ -551,7 +610,7 @@ header h1 {
     width: 100%;
     height: 1.5px;
     background-color: #ffffff;
-    top: 12px;
+    top: 15px;
     transform-origin: 0%;
     animation: strike 1s forwards;
 
@@ -571,9 +630,7 @@ header h1 {
     color: white;
 }
 
-.todo .delete {
-
-}
+.todo .delete {}
 
 @keyframes slideIn {
     0% {
@@ -623,14 +680,15 @@ header h1 {
     border-bottom: 1px solid black;
     padding: 3px;
     font-family: inherit;
+    transition: 0.3s;
 }
 
 #taskTitle:focus {
     outline: none;
 }
 
-#taskTitle.error {
-    background-color: red;
+.modal-content.error {
+   border: 2px solid #ff3e48;
 }
 
 .modal-category>header {

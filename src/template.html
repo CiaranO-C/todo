@@ -22,7 +22,7 @@
 
 <body>
     <nav>
-        <header><input type="search" name="search" id="search" placeholder="Search"></header>
+        <header><input type="search" name="search" id="search" placeholder="This searchbar does nothing"></header>
         <div class="todo-dashboard">
             <div class="today">
                 <div class="dash-item-header">
@@ -61,7 +61,7 @@
                 <button class="add" id="taskAdd">+</button>
             </div>
             <div class="task-list">
-                <div class="list-item" id="general">
+                <div class="list-item" id="general" data-taskid="general">
                     <span class="material-symbols-outlined">inbox</span>
                     <p>General</p>
                 </div>
@@ -77,10 +77,13 @@
         </div>
         <header>
             <div class="logo-container">
-                <img src="./logo.png" alt="logo" id="logo">
+                <img src="./18727e2c4449f5169ee4.png" alt="logo" id="logo">
                 <h1>TaskHop</h1>
             </div>
-            <button id="deleteAll">Delete All</button>
+            <div class="header-btn-container">
+                <button id="cancel">Cancel</button>
+                <button id="deleteAll">Delete Completed</button>
+            </div>
         </header>
         <div class="content"></div>
     </main>
