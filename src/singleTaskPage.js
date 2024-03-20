@@ -434,7 +434,7 @@ import { updateCounters } from "./sidebar";
 
 
     function destroyTodo(todo) {
-        todoClone = todo.cloneNode(true);
+        const todoClone = todo.cloneNode(true);
         todo.replaceWith(todoClone);
 
         while (todoClone.firstChild) {
